@@ -1,0 +1,120 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="shortcut icon" type="image/png" href="img/appIcon.png" />
+
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
+
+    <link rel="stylesheet" href="css/sideNav.css" />
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/scrollBar.css" />
+
+    <script src="https://www.gstatic.com/firebasejs/9.13.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.13.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/ui/6.0.2/firebase-ui-auth.js"></script>
+
+    <title>CHAT</title>
+  </head>
+
+  <body>
+    <div id="messenger">
+      <div id="signed-out" class="row">
+        <nav style="background: #00aff0">
+          <div class="nav-wrapper container">
+            <img
+              class="brand-logo"
+              src="img/logos/logo_white.png"
+              alt="CHAT"
+              style="
+                height: 50%;
+                width: auto;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+              "
+            />
+          </div>
+        </nav>
+
+        <!-- Sign In -->
+        <div id="signInTab" class="tabcontent">
+          <div class="modal-content">
+            <form id="signin-form">
+              <div class="input-field">
+                <i
+                  class="material-icons prefix"
+                  style="
+                    font-size: 1.5rem;
+                    top: 50%;
+                    transform: translateY(-50%);
+                  "
+                  >email</i
+                >
+                <input type="email" id="signin-email" required="" />
+                <label for="signin-email" class="">Email</label>
+              </div>
+              <div class="input-field">
+                <i
+                  class="material-icons prefix"
+                  style="
+                    font-size: 1.5rem;
+                    top: 50%;
+                    transform: translateY(-50%);
+                  "
+                  >vpn_key</i
+                >
+                <input type="password" id="signin-password" required="" />
+                <label for="signin-password" class="">Password</label>
+              </div>
+              <button id="signInBtn" class="btn hoverable">
+                <span id="signInBtnText" class="">Sign In</span>
+                <i id="signInBtnIcon" class="material-icons loadingIcon hide"
+                  >autorenew</i
+                >
+              </button>
+
+              <div style="margin-top: 1rem" class="center-align">
+                New Here?
+                <a class="switch" onclick="openTab('signUpTab')"
+                  >Sign Up Instead</a
+                >
+              </div>
+              <p
+                style="margin-top: 1rem"
+                class="error red-text center-align"
+              ></p>
+            </form>
+
+            <button id="signInWithGoogle" class="btn hoverable">
+              <span id="signInBtnText" class="">Sign In With Google</span>
+              <i id="signInBtnIcon" class="material-icons loadingIcon hide"
+                >autorenew</i
+              >
+            </button>
+
+            <button id="signInWithGoogle69" class="btn hoverable">
+              <span id="signInBtnText" class="">Test database</span>
+              <i id="signInBtnIcon" class="material-icons loadingIcon hide"
+                >autorenew</i
+              >
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-beta/js/materialize.min.js"></script>
+    <script src="js/userState.js"></script>
+    <script type="module" src="js/auth.js"></script>
+    <script type="module" src="./firebase/service.js"></script>
+  </body>
+</html>

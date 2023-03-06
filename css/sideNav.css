@@ -1,0 +1,121 @@
+#menu{
+    width: 100%;
+    max-width: 300px;
+    height: 100%;
+    position: absolute;
+    left: 0%;
+    top: 0%;
+    cursor: pointer;
+    display: block;
+    background-color:  #D9F4FF ;
+    padding: 0;
+}
+
+/*#019DD8 #00AFF0 #D9F4FF */
+
+@-webkit-keyframes slideInAnim {
+    0%{opacity: 0;left: -100%;}
+    100% { left: 0; opacity: 1; display: block; }
+}
+
+@keyframes slideInAnim {
+    0%{opacity: 0;left: -100%;}
+    100% { left: 0; opacity: 1; display: block; }
+}
+
+@-webkit-keyframes slideOutAnim {
+    0% { left: 0; opacity: 1; }
+    1000%{opacity: 0; left: 100%; display: none;}
+}
+
+@keyframes slideOutAnim {
+    0% { left: 0; opacity: 1; }
+    1000%{opacity: 0; left: 100%; display: none;}
+}
+
+ul {
+    position: relative;
+    list-style: none;
+    max-height: 100%;
+    overflow: hidden;
+}
+
+.center {
+    text-align: center;
+}
+
+.profile {
+    background-color: #00AFF0 ;
+    position: relative;
+    height: 40%;
+    width: 100%;
+    /* border-bottom: 1px solid #34A853; */
+}
+
+#profileInfo {
+    position: relative;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+#profilePicture{
+    position: relative;
+    width: 150px;
+    height: 150px;
+    max-width: 50%;
+    max-height: 50%;
+    box-sizing: border-box;
+    padding: 0.5rem;
+}
+
+#profileName {
+    color: white;
+    font-weight: bold;
+}
+
+#profileStatus {
+    color: white;
+}
+
+.options {
+    background-color: #00AFF0 ;
+    position: relative;
+    height: 60%;
+    width: 100%;
+}
+
+.item {
+    background: #00AFF0 ;
+    /* transition: background .35s; */
+    cursor: pointer;
+    color: white;
+}
+
+.item a {
+    text-decoration: none;
+    color: inherit;
+    display: inline-block;
+    padding: 20px;
+    padding-left: 30px;
+    width: 100%;
+    cursor: pointer;
+}
+
+.active{
+    background: #019DD8;
+    color: white;
+    cursor: pointer;
+}
+
+.item:hover, .item a:hover {
+    background: rgba(1, 157, 216, 0.3);
+    color: white;
+    cursor: pointer;
+}
+
+.active:hover{
+    background: #019DD8;
+    color: white;
+    cursor: pointer;
+}

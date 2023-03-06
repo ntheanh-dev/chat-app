@@ -1,0 +1,929 @@
+* {
+  padding: 0;
+  margin: 0;
+}
+
+/*#019DD8 #00AFF0 #D9F4FF */
+
+body {
+  background-color: #f5f6f8;
+  margin: 0;
+}
+
+.row {
+  height: 100%;
+  margin: 0;
+}
+
+.row.titleBar {
+  height: 10%;
+  min-height: 50px;
+  margin: 0;
+}
+
+.row.main {
+  margin: 0;
+  height: 90%;
+}
+
+#messenger {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  height: 100%;
+  width: 100%;
+  max-width: 1200px;
+  max-height: 600px;
+}
+
+#chatWindow {
+  position: absolute;
+  left: 300px;
+  height: 100%;
+  width: 70%;
+  max-width: 1200px;
+  max-height: 600px;
+  padding: 0;
+  margin: 0;
+}
+
+#chats {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+#conversations {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+#groups {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+#friends {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+#people {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+/***********GENERAL***************/
+
+.disableClick {
+  pointer-events: none;
+  cursor: wait;
+  opacity: 0.5;
+}
+
+#backBtn:hover,
+#menuBtn:hover {
+  background-color: #00aff0;
+  color: white;
+  cursor: pointer;
+}
+
+#navBtn {
+  position: absolute;
+  right: 50%;
+  top: 50%;
+  transform: translateY(-50%);
+  margin: auto;
+  display: flex;
+}
+
+#navBtn > .navText ~ .navText {
+  padding-left: 0.6rem;
+}
+
+#navBtn > .navText:hover {
+  cursor: pointer;
+}
+
+#navImg {
+  position: relative;
+  width: 30%;
+  left: 0%;
+  top: 50%;
+  transform: translate(0%, -50%);
+}
+
+.navText {
+  font-size: 20px;
+  color: #00aff0;
+}
+
+#picture {
+  width: auto;
+  height: 100%;
+  position: relative;
+  left: 0;
+  top: 0;
+  display: none;
+}
+
+#details {
+  position: relative;
+  height: 100%;
+  margin: auto;
+}
+
+#detailsInside,
+#statusInside {
+  position: relative;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+#status {
+  position: relative;
+  height: 100%;
+  float: right;
+  position: relative;
+  margin: auto;
+}
+
+#navDiv {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background-color: white;
+  display: block;
+  border-bottom: #00aff0 solid 1px;
+}
+
+#navTitle {
+  text-align: center;
+  position: absolute;
+  right: 2rem;
+  height: 80%;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 14px;
+  font-weight: bold;
+  color: #00aff0;
+  margin: auto;
+  padding: 0.6rem;
+}
+
+/*************CHATS***************/
+
+#chatsDiv {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  background-color: white;
+  display: block;
+  overflow-y: scroll;
+  padding: 0.5rem;
+}
+
+#chatItem {
+  position: relative;
+  width: 100%;
+  height: 15%;
+  background-color: white;
+  border-bottom: 1px solid #d9f4ff;
+  padding-left: 1rem;
+  box-sizing: border-box;
+  overflow: hidden;
+  margin: 0;
+}
+
+#chatItem:hover {
+  /* transform: scale(1.02); */
+  background: #d9f4ff;
+  cursor: pointer;
+}
+
+#chatTitle {
+  font-size: 18px;
+  font-weight: bold;
+  color: #00aff0;
+}
+
+#chatLastMessage {
+  font-size: 12px;
+  font-weight: normal;
+  color: dimgray;
+}
+
+#chatNewMessageCount {
+  font-size: 12px;
+  font-weight: normal;
+  color: white;
+  background: #00aff0;
+  text-align: center;
+}
+
+#chatLastModified {
+  font-size: 12px;
+  font-weight: normal;
+  color: dimgray;
+  text-align: center;
+}
+
+/************* FRIENDS + PEOPLE ***************/
+
+#friendsDiv,
+#peopleDiv {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  background-color: white;
+  display: block;
+  overflow-y: scroll;
+  padding: 0.5rem;
+}
+
+#friendItem,
+#peopleItem {
+  position: relative;
+  width: 100%;
+  height: 15%;
+  background-color: white;
+  border-bottom: 1px solid #d9f4ff;
+  overflow: hidden;
+  padding-left: 1rem;
+  box-sizing: border-box;
+  margin: 0;
+}
+
+#friendTitle,
+#peopleTitle {
+  font-size: 18px;
+  font-weight: bold;
+  color: #00aff0;
+}
+
+#friendLastActive,
+#peopleBio {
+  font-size: 12px;
+  font-weight: normal;
+  color: dimgray;
+}
+
+#fiendChatWith,
+#friendViewProfile,
+#peopleAddFriend,
+#peopleViewProfile {
+  font-size: 24px;
+  font-weight: normal;
+  color: #00aff0;
+  background: transparent;
+  text-align: center;
+  text-decoration-color: #00aff0;
+}
+
+.messageFriend,
+.viewFriendProfile,
+.addFriend,
+.viewPeopleProfile {
+  font-size: 24px;
+  color: #00aff0;
+  background: transparent;
+  padding: 0.5rem;
+}
+
+.messageFriend:hover,
+.viewFriendProfile:hover,
+.addFriend:hover,
+.viewPeopleProfile:hover {
+  /* font-size: 32px; */
+  cursor: pointer;
+}
+
+.messageFriend:active,
+.viewFriendProfile:active,
+.addFriend:active,
+.viewPeopleProfile:active {
+  /* transform: scale(0.8); */
+  color: #d9f4ff;
+  cursor: pointer;
+}
+
+/************* PEOPLE ***************/
+
+#requestsLabelDiv,
+#addPeopleLabelDiv {
+  height: 10%;
+  background-color: #00aff0;
+}
+
+#requestsLabel,
+#addPeopleLabel {
+  font-size: 18px;
+  font-weight: bold;
+  color: white;
+  text-align: left;
+  margin-left: 1rem;
+  position: relative;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+#notFoundDiv {
+  position: relative;
+  background-color: white;
+  border-bottom: 1px solid #d9f4ff;
+}
+
+#notFoundP {
+  font-size: 18px;
+  font-weight: bold;
+  color: #d9f4ff;
+  text-align: center;
+  margin: 1rem;
+  position: relative;
+  padding: 1rem;
+}
+
+#searchPeopleDiv {
+  position: relative;
+  height: 10%;
+  background-color: white;
+  align-items: center;
+  min-height: 50px;
+  margin: 1rem;
+  width: 100%;
+}
+
+#searchPeopleBtn {
+  position: relative;
+  height: 100%;
+  text-align: center;
+  color: white;
+  background: #00aff0;
+  box-sizing: border-box;
+  width: 10%;
+  box-shadow: none;
+  display: table;
+  pointer-events: none;
+  cursor: none;
+}
+
+#searchPeopleIcon {
+  display: table-cell;
+  vertical-align: middle;
+}
+
+#searchPeopleInput {
+  position: relative;
+  height: 100%;
+  width: 85%;
+  padding: 0.6rem;
+  box-sizing: border-box;
+  border-width: 1px 1px 1px 0px;
+  border-color: #00aff0;
+  border-style: solid;
+}
+
+/************* CONVERSATION ******************/
+
+#backBtn {
+  height: 40px;
+  width: 40px;
+  line-height: 40px;
+  text-align: center;
+  background: transparent;
+  color: #00aff0;
+  text-decoration: none;
+  box-shadow: none;
+  margin: auto;
+  font-size: 28px;
+  position: absolute;
+  top: 50%;
+  left: 2rem;
+  transform: translateY(-50%);
+}
+
+#backBtnArrow {
+  text-align: center;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+#conversationDiv {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  background-color: white;
+  display: block;
+  overflow: hidden;
+}
+
+#messagesDiv {
+  position: relative;
+  height: 90%;
+  background-color: white;
+  padding: 1rem;
+  overflow-y: scroll;
+  scroll-behavior: smooth;
+}
+
+#sendDiv {
+  position: relative;
+  height: 10%;
+  background-color: white;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  align-items: center;
+  /* padding: 0.6rem; */
+  /* border-radius: 1rem; */
+  min-height: 50px;
+}
+
+#sendMessage {
+  position: relative;
+  height: 100%;
+  padding: 0.6rem;
+  box-sizing: border-box;
+  /* border-radius: 1rem; */
+  border-width: 1px 0px 1px 1px;
+  border-color: #00aff0;
+  border-style: solid;
+  width: 80%;
+}
+
+#sendBtn {
+  position: relative;
+  height: 100%;
+  text-align: center;
+  align-items: center;
+  color: white;
+  background: #00aff0;
+  box-sizing: border-box;
+  width: 10%;
+}
+
+#fileBtn {
+  position: relative;
+  height: 100%;
+  margin: auto;
+  text-align: center;
+  align-items: center;
+  /* border-right: 2px solid white; */
+  background-color: white;
+  color: #00aff0;
+  border-width: 1px 1px 1px 0px;
+  border-color: #00aff0;
+  border-style: solid;
+  box-shadow: none;
+  background-color: white;
+  width: 10%;
+}
+
+#sendBtn:active {
+  transform: scale(0.8);
+}
+
+#sendBtn:hover #sendIcon {
+  font-size: 28px;
+}
+
+#fileBtn:hover #imageIcon {
+  font-size: 28px;
+}
+
+#imageIcon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+#sendIcon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+#menuIcon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.sendTxt {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.message {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  margin: auto;
+  padding: 0.6rem;
+  height: auto;
+  width: auto;
+  overflow: hidden;
+}
+
+.imageMessage {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  margin: auto;
+  padding: 0.6rem;
+  height: auto;
+  width: 100%;
+  overflow: hidden;
+}
+
+.imageBody {
+  font-weight: normal;
+}
+
+.sender {
+  font-weight: bold;
+  color: #00aff0;
+}
+
+.senderMessageBody {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  font-weight: normal;
+  text-align: left;
+  float: left;
+  padding: 0.6rem;
+  width: 60%;
+  /* width: auto; */
+  max-width: 60%;
+  border: 1px solid #d9f4ff;
+  border-radius: 0rem 1rem 1rem 1rem;
+  background-color: #d9f4ff;
+  color: black;
+}
+
+.receiver {
+  color: #00aff0;
+  font-weight: bold;
+  float: right;
+}
+
+.receiverMessageBody {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  font-weight: normal;
+  float: right;
+  padding: 0.6rem;
+  text-align: left;
+  width: 60%;
+  /* width: auto; */
+  max-width: 60%;
+  border: 1px solid #d9f4ff;
+  border-radius: 1rem 0rem 1rem 1rem;
+  background-color: #d9f4ff;
+  color: black;
+}
+
+.senderImgBody,
+.receiverImgBody {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  position: relative;
+  height: auto;
+  width: auto;
+  max-width: 60%;
+  border-radius: 1rem 0rem 1rem 1rem;
+}
+
+.senderImgBody {
+  float: left;
+}
+
+.receiverImgBody {
+  float: right;
+}
+
+/* label underline focus color */
+input:focus {
+  box-shadow: none !important;
+}
+
+/********************************* AUTH ************************************/
+
+.switch:hover {
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+#signed-out {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  max-width: 1000px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+#signInTab,
+#signUpTab {
+  position: relative;
+}
+
+#signed-out #signin-form {
+  width: inherit;
+}
+
+#signed-out #signup-form {
+  width: inherit;
+}
+
+/* Style the tab */
+
+#signed-out .tab {
+  overflow: hidden;
+  background-color: inherit;
+}
+
+/* Style the tab content */
+
+#signed-out .tabcontent {
+  display: none;
+  padding: 5% 10%;
+  background-color: white;
+}
+
+#signed-out #signInTab {
+  display: block;
+  background-color: white;
+}
+
+#signed-out label {
+  color: grey;
+}
+
+#signed-out input:focus + label {
+  color: #00aff0 !important;
+}
+
+#signed-out input:focus {
+  border-bottom: 1px solid #00aff0 !important;
+  box-shadow: 0 1px 0 0 #00aff0 !important;
+}
+
+/* label color */
+
+#signed-out .input-field label {
+  color: grey;
+  background: transparent;
+}
+
+/* label focus color */
+
+#signed-out .input-field input:focus + label {
+  color: #00aff0 !important;
+}
+
+/* label underline focus color */
+
+#signed-out .input-field input:focus {
+  border-bottom: 1px solid #00aff0 !important;
+  box-shadow: 0 1px 0 0 #00aff0 !important;
+}
+
+/* icon prefix focus color */
+
+#signed-out .input-field .prefix {
+  color: grey;
+  background: transparent;
+}
+
+/* icon prefix focus color */
+
+#signed-out .input-field .prefix.active {
+  color: #00aff0;
+  background: transparent;
+}
+
+#signed-out .btn,
+#signed-out .btn:hover,
+#signed-out .btn:visited,
+#signed-out .btn:active,
+#signed-out .btn:focus {
+  background-color: #00aff0;
+  color: white;
+  width: 100%;
+  text-align: center;
+}
+
+/********************************* SIDE NAV ************************************/
+
+.hamburger {
+  display: none;
+  height: 40px;
+  width: 40px;
+  line-height: 40px;
+  text-align: center;
+  background: transparent;
+  color: #00aff0;
+  text-decoration: none;
+  margin: auto;
+  font-size: 28px;
+  position: absolute;
+  top: 50%;
+  left: 2rem;
+  transform: translateY(-50%);
+}
+
+#menuBtnIcon {
+  text-align: center;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.slideIn {
+  -webkit-animation: slideInAnim 0.5s forwards ease-in;
+  animation: slideInAnim 0.5s forwards ease-in;
+}
+
+.slideOut {
+  -webkit-animation: slideOutAnim 0.5s forwards ease-in;
+  animation: slideOutAnim 0.5s forwards ease-in;
+}
+
+.hide {
+  display: none;
+}
+
+.show {
+  display: block;
+}
+
+/************* APP COVER *******************/
+
+.appCover {
+  background-color: white;
+  position: relative;
+  height: 40%;
+  width: 100%;
+  /* border-bottom: 1px solid #34A853; */
+}
+
+#appCoverInfo {
+  position: relative;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+#appCoverPicture {
+  position: relative;
+  width: 350px;
+  height: 250px;
+  max-width: 100%;
+  max-height: 100%;
+  box-sizing: border-box;
+  margin-top: 1rem;
+}
+
+/***********************************/
+
+@media only screen and (max-width: 993px) {
+  body {
+    background-color: white;
+  }
+  #signInTab,
+  #signUpTab {
+    position: absolute;
+    width: 100%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 0;
+  }
+  #messenger {
+    position: absolute;
+    height: 100%;
+    min-height: 100%;
+  }
+  #chatWindow {
+    position: absolute;
+    left: 0px;
+    height: 100%;
+    width: 100%;
+    max-width: 1200px;
+    min-height: 100%;
+  }
+  #menu {
+    max-width: 100%;
+  }
+  #conversationTitleDiv {
+    position: relative;
+    width: 100%;
+  }
+  #sendMessage {
+    width: 70%;
+  }
+  #sendBtn {
+    width: 15%;
+  }
+  #fileBtn {
+    width: 15%;
+  }
+  .hamburger {
+    display: block;
+  }
+  .friendTxt {
+    position: relative;
+    width: 70%;
+    left: 0%;
+    top: 25%;
+  }
+  #conversationDiv {
+    position: relative;
+    width: 100%;
+  }
+  #chatTitle,
+  #friendTitle,
+  #peopleTitle,
+  .navText {
+    font-size: 14px;
+  }
+  .senderMessageBody,
+  .receiverMessageBody,
+  .senderImgBody,
+  .receiverImgBody {
+    max-width: 80%;
+  }
+
+  #searchPeopleBtn {
+    width: 15%;
+  }
+
+  #searchPeopleInput {
+    width: 80%;
+  }
+}
+
+/* Loading Icon */
+
+.loadingIcon {
+  -webkit-animation: spin1 2s infinite linear;
+  -moz-animation: spin1 2s infinite linear;
+  -o-animation: spin1 2s infinite linear;
+  -ms-animation: spin1 2s infinite linear;
+  animation: spin1 2s infinite linear;
+}
+
+@-webkit-keyframes spin1 {
+  0% {
+    -webkit-transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(360deg);
+  }
+}
+
+@-moz-keyframes spin1 {
+  0% {
+    -moz-transform: rotate(0deg);
+  }
+  100% {
+    -moz-transform: rotate(360deg);
+  }
+}
+
+@-o-keyframes spin1 {
+  0% {
+    -o-transform: rotate(0deg);
+  }
+  100% {
+    -o-transform: rotate(360deg);
+  }
+}
+
+@-ms-keyframes spin1 {
+  0% {
+    -ms-transform: rotate(0deg);
+  }
+  100% {
+    -ms-transform: rotate(360deg);
+  }
+}
+
+@keyframes spin1 {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
