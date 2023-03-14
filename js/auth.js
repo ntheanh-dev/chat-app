@@ -1,7 +1,7 @@
 // import { initializeApp } from "firebase/app";
 import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut, getAdditionalUserInfo }
     from "https://www.gstatic.com/firebasejs/9.17.1/firebase-auth.js";
-import { doc, onSnapshot, getFirestore } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore.js";
+import { doc, onSnapshot, getFirestore, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-analytics.js";
 import { addDocument, getCurrentUserData, fetchUserById, generateKeywords } from "../firebase/service.js";
@@ -73,11 +73,16 @@ export const authThentication = {
         const app = initializeApp(firebaseConfig);
         const analytics = getAnalytics(app);
 
-        let db = getFirestore();
+        const db = getFirestore();
         const currentUser = getCurrentUserData();
         if (currentUser) {
-            const unsub = onSnapshot(doc(db, "users", currentUser.id), (doc) => {
-                localStorage.setItem("userData", JSON.stringify(doc.data()));
+            const unsub = onSnapshot(doc(db, "users", currentUser.id), async (docum) => {
+                localStorage.setItem("userData", JSON.stringify(docum.data()));
+                // const currentUser = doc(db, "users", docum.data().id);
+
+                // await updateDoc(currentUser, {
+                //     lastLoginAt: serverTimestamp()
+                // });
             });
         }
     }
@@ -88,6 +93,5 @@ authThentication.init();
 if (signInWithGoogle) {
     signInWithGoogle.addEventListener('click', async e => {
         authThentication.signInWithGoogle();
-
     })
 }

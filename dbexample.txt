@@ -1,0 +1,15 @@
+messages [
+    {
+        senderId: ...,
+        text: ...,
+        createAt:...,
+        id: converstationId,
+    }
+]
+converstations : [
+    {
+        id: converstatio,
+        members: [userId, friendId]
+        createAt: ....,
+    }
+]

@@ -2,8 +2,7 @@ import {
     fetchCurrentUserConversation, fetchUserById, fetUsersByName,
     unFriendRequest, addFriendRequest, unRequestAddFriend, aceeptResquest,
     unAcceptRequest, getCurrentUserData, getTimeElapsed, addDocument, setSelectedChat,
-    getSelectedChat, fetchConverstationByRecieverId,
-    postMessage
+    getSelectedChat, fetchConverstationByRecieverId
 } from '../firebase/service.js';
 import {
     getFirestore, getDoc, updateDoc, arrayUnion, arrayRemove, doc, setDoc, addDoc,
@@ -812,7 +811,7 @@ function renderChat(friend, lastMessage, lastAt, notification) {
 /************************************ CONVERSATION SECTION ******************************************/
 sendBtn.addEventListener('click', function (e) {
     e.preventDefault();
-    const currentUser = getCurrentUserData()
+    const { name, id } = getCurrentUserData()
     if (fileInput.value) {
         sendBtn.disabled = true;
         sendImage(currentFile);
@@ -824,7 +823,8 @@ sendBtn.addEventListener('click', function (e) {
         sendMessage({
             message: message,
             type: "sent",
-            name: currentUser.name
+            senderName: name,
+            senderId: id,
         });
         resetSendDiv();
     }
@@ -862,13 +862,19 @@ function resetSendDiv() {
 // Send two messages for UI demonstration purpose
 function sendMessage(data) {
     // Send to firestore database
-    const { isNewConverstation } = getSelectedChat();
-    const friendId = getSelectedChat().id;
-    const { id } = getCurrentUserData();
-    alert(message + "\n" + "Message Sent");
-    postMessage(data.message, id + friendId)
+    const { message, type, senderName, senderId } = data
+    const { picture
+    } = getCurrentUserData();
+    addDocument('messages', {
+        text: message,
+        senderId: senderId,
+        senderName: senderName,
+        picture: picture,
+        conversationId: getSelectedChat().id,
+        createAt: serverTimestamp(),
+    })
 
-    renderMessage(data.message, data.type, data.name);
+    // renderMessage(message, type, senderName);
     // setTimeout(() => {
     //     renderMessage(message, "received", "friend@life.com");
     // }, 2000);
@@ -945,7 +951,6 @@ function renderMessage(message, type, sender) {
             messageBody.appendChild(text2);
         }
     }
-
     // HANDLING NORMAL TEXT
     else {
         messageBody.appendChild(document.createTextNode(message));
@@ -992,8 +997,8 @@ function renderImage(path, type, sender) {
 }
 
 async function openConversation(friend) {
-    const { id, name, email } = friend
-
+    const { id, name, email, photoURL } = friend
+    const currentUserId = getCurrentUserData().id
     groupsBtn.parentElement.classList.remove('active');
     friendsBtn.parentElement.classList.remove('active');
     peopleBtn.parentElement.classList.remove('active');
@@ -1009,25 +1014,61 @@ async function openConversation(friend) {
     document.querySelector("#messagesDiv").innerHTML = "";
     chatOn = true;
     // fetchAllmessage
-    const hasConverstationId = await fetchConverstationByRecieverId(id);
-    if (hasConverstationId) {
-        let db = getFirestore();
-        const unsub = onSnapshot(doc(db, "converstations", getCurrentUserData().id + id),
-            (doc) => {
-                console.log(doc.data())
-            });
-    } else {
-        /// create new conversation
-        addDocument('converstations', {
-            members: [getCurrentUserData().id, id],
-            createAt: serverTimestamp(),
-            id: getCurrentUserData().id + id,
-            messages: []
-        })
-    }
+    const hasConverstation = await fetchConverstationByRecieverId(id);
     setSelectedChat({
-        id: id,
+        id: hasConverstation ? hasConverstation.id : getSelectedChat().id,
         name: name,
         email: email,
+        photoURL: photoURL
     })
+    if (hasConverstation) {
+        subscrigeMessageDb();
+    } else {
+        addDocument('converstations', {
+            members: [currentUserId, id],
+            createAt: serverTimestamp(),
+        })
+    }
+
+}
+async function subscrigeMessageDb() {
+
+    // const messages = await fetchAllmessageAtCurrentConver();
+
+    // messages.map(message => {
+    //     console.log(message)
+    //     const { text, createAt, senderId } = message;
+    //     const currentUserName = getCurrentUserData().name;
+    //     const selectedChatUserName = getSelectedChat().name;
+    //     if (senderId === id) {
+    //         renderMessage(text, 'sent', currentUserName)
+    //     } else {
+    //         renderMessage(text, 'receiver', selectedChatUserName)
+    //     }
+    // })
+
+    const { id, name } = getCurrentUserData();
+    const selectedChatid = getSelectedChat().id;
+    let db = getFirestore();
+    const q = query(collection(db, "messages"), where("conversationId", "==", selectedChatid));
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+        console.log('visited')
+        querySnapshot.docChanges().forEach((change) => {
+            if (change.type === "added") {
+                const { text, createAt, senderId } = change.doc.data();
+                if (senderId === id) {
+                    renderMessage(text, 'sent', name)
+                } else {
+                    renderMessage(text, 'receiver', name)
+                }
+            }
+
+        });
+    });
+}
+function clearMessages() {
+    const messagesDiv = document.getElementById("messagesDiv");
+    while (messagesDiv.firstChild) {
+        messagesDiv.removeChild(messagesDiv.lastElementChild);
+    }
 }

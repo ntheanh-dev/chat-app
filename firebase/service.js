@@ -16,7 +16,8 @@ export const addDocument = (collectionName, data) => {
             const newConversation = doc(collection(db, collectionName));
             await setDoc(newConversation, {
                 ...data,
-                createAt: serverTimestamp()
+                createAt: serverTimestamp(),
+                id: newConversation.id
             });
         }
     })();
@@ -198,7 +199,7 @@ export function fetchConverstationByRecieverId(friendId) {
     return new Promise((resolve, reject) => {
         const db = getFirestore();
         const q = query(collection(db, "converstations"),
-            where("member", 'in', [id, friendId])
+            where("members", 'array-contains-any', [id, friendId])
         )
         onSnapshot(q, (snapshot) => {
             let result = null;
@@ -208,18 +209,6 @@ export function fetchConverstationByRecieverId(friendId) {
             resolve(result)
         })
     })
-}
-export async function postMessage(message, converstationId) {
-    const db = getFirestore();
-    const currentConversation = doc(db, "converstations", converstationId)
-    const { id } = getCurrentUserData();
-    await updateDoc(currentConversation, {
-        messages: arrayUnion({
-            text: message,
-            createAt: serverTimestamp(),
-            senderId: id
-        })
-    });
 }
 export function fetchCurrentUserConversation() {
     const { id } = getCurrentUserData();
@@ -237,13 +226,6 @@ export function fetchCurrentUserConversation() {
             resolve(friendId)
         })
     })
-}
-export function onSnapshotConverstation(conversationId) {
-    let db = getFirestore();
-    const unsub = onSnapshot(doc(db, "users", currentUser.id), (doc) => {
-        localStorage.setItem("userData", JSON.stringify(doc.data()));
-    });
-    return unsub
 }
 export function getCurrentUserData() {
     return JSON.parse(localStorage.getItem("userData")) || null
