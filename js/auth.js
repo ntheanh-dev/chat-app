@@ -29,6 +29,7 @@ export const authThentication = {
                 const token = credential.accessToken;
 
                 const { isNewUser, profile } = getAdditionalUserInfo(result)
+                console.log(isNewUser)
                 if (isNewUser) {
                     profile.lastLoginAt = result.user.metadata.lastLoginAt
                     profile.keywords = generateKeywords(profile.name)
@@ -36,7 +37,9 @@ export const authThentication = {
                     profile.listRequest = []
                     addDocument('users', profile)
                     localStorage.setItem("userData", JSON.stringify(profile));
-                    window.location.href = "/main.html";
+                    setTimeout(() => {
+                        window.location.href = "/main.html";
+                    }, 2000);
                 } else {
                     fetchUserById(profile.id)
                         .then(currentUser => {
@@ -56,7 +59,7 @@ export const authThentication = {
             // Sign-out successful.
             localStorage.removeItem("userData");
             localStorage.removeItem("selecteChat");
-            window.location.href = "./signIn.html";
+            window.location.href = "./index.html";
         }).catch((error) => {
             // An error happened.
         });

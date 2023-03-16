@@ -315,8 +315,9 @@ body {
 
 /************* PEOPLE ***************/
 .wapperSearchPeopleItem,
+.wapperRequestPeopleItem,
 .requestsSection {
-  height: inherit;
+  display: contents;
 }
 #requestsLabelDiv,
 #addPeopleLabelDiv {

@@ -14,9 +14,8 @@ authThentication.init();
 
 var incomingRequestList = ["opportunity@life.com"];
 var outgoingRequestList = ["hope@life.com"];
-var peopleList = ["stranger@life.com"];
-var friendsList = ["friend@life.com", "friend@life.com"];
 var chatOn = false;
+var unsubscribe = () => { };
 
 var menu = document.getElementById('menu');
 var chatWindow = document.getElementById('chatWindow');
@@ -653,11 +652,12 @@ async function displayChats() {
     // renderChat(0, "friend@life.com", "Enjoy never ending happiness...", "1d ago", 3);
     // renderChat(1, "friend@life.com", "Enjoy never ending happiness...", "1d ago", 3);
     const chats = await fetchCurrentUserConversation();
+    const { id } = getCurrentUserData();
     chats.map(async chat => {
-        const friendId = chat.members.filter(id => id !== getCurrentUserData().id)
+        const friendId = chat.members.filter(memberId => memberId !== id)
         const friend = await fetchUserById(friendId[0])
         const messages = await fetchLastMessages(chat.id)
-        const lastMessage = messages.sort((a, b) => b.createAt - a.createAt)[0]
+        const lastMessage = messages.filter(message => message.senderId !== id).sort((a, b) => b.createAt - a.createAt)[0]
         if (lastMessage) {
             renderChat(friend, lastMessage.text, getTimeElapsed(lastMessage.createAt.seconds), 1, chat);
         }
@@ -737,6 +737,7 @@ function renderChat(friend, lastMessage, lastAt, notification, chat) {
             photoURL: friend.photoURL
         })
 
+        unsubscribe();
         openConversation(friend, 'openFromChatSection');
     });
 
@@ -974,17 +975,16 @@ async function subscrigeMessageDb() {
     const { id, name } = getCurrentUserData();
     const selectedChatid = getSelectedChat().id;
     let db = getFirestore();
-    const q = query(collection(db, "messages"), orderBy("createAt"));
-    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+    const q = query(collection(db, "messages"), where('conversationId', '==', selectedChatid), orderBy('createAt'));
+    unsubscribe = onSnapshot(q, (querySnapshot) => {
         querySnapshot.docChanges().forEach((change) => {
             if (change.type === "added") {
-                const { text, createAt, senderId, conversationId } = change.doc.data();
-                if (conversationId === selectedChatid)
-                    if (senderId === id) {
-                        renderMessage(text, 'receiver', name)
-                    } else {
-                        renderMessage(text, 'sent', getSelectedChat().name)
-                    }
+                const { text, createAt, senderId } = change.doc.data();
+                if (senderId === id) {
+                    renderMessage(text, 'receiver', name)
+                } else {
+                    renderMessage(text, 'sent', getSelectedChat().name)
+                }
             }
         });
     });

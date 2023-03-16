@@ -259,7 +259,7 @@ export function fetchLastMessages(conversationId) {
 }
 ////////////////Localstorage////////////
 export function getCurrentUserData() {
-    return JSON.parse(localStorage.getItem("userData")) || null;
+    return localStorage.getItem("userData") !== "undefined" && JSON.parse(localStorage.getItem("userData")) || null;
 }
 export function setSelectedChat(friendId) {
     localStorage.setItem("selectedChat", JSON.stringify(friendId));
