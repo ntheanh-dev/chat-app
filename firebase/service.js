@@ -215,12 +215,14 @@ export function fetchCurrentUserConversation() {
     return new Promise((resolve, reject) => {
         const db = getFirestore();
         const q = query(collection(db, "converstations"),
-            where("member", 'array-contains', id)
+            where("members", 'array-contains', id)
         )
         onSnapshot(q, (snapshot) => {
+            const result = []
             snapshot.docs.forEach((doc) => {
-                resolve(doc.data())
+                result.push({ ...doc.data() })
             })
+            resolve(result)
         })
     })
 }
@@ -240,6 +242,22 @@ export function fetchAllCurrentMessages() {
         })
     })
 }
+export function fetchLastMessages(conversationId) {
+    let db = getFirestore();
+    return new Promise((resolve, reject) => {
+        const q = query(collection(db, "messages"),
+            where("conversationId", '==', conversationId)
+        )
+        onSnapshot(q, (snapshot) => {
+            let result = [];
+            snapshot.docs.forEach((doc) => {
+                result.push({ ...doc.data() })
+            })
+            resolve(result)
+        })
+    })
+}
+////////////////Localstorage////////////
 export function getCurrentUserData() {
     return JSON.parse(localStorage.getItem("userData")) || null;
 }

@@ -314,7 +314,10 @@ body {
 }
 
 /************* PEOPLE ***************/
-
+.wapperSearchPeopleItem,
+.requestsSection {
+  height: inherit;
+}
 #requestsLabelDiv,
 #addPeopleLabelDiv {
   height: 10%;

@@ -36,13 +36,13 @@ export const authThentication = {
                     profile.listRequest = []
                     addDocument('users', profile)
                     localStorage.setItem("userData", JSON.stringify(profile));
-                    window.location.href = "/index.html";
+                    window.location.href = "/main.html";
                 } else {
                     fetchUserById(profile.id)
                         .then(currentUser => {
                             if (currentUser) {
                                 localStorage.setItem("userData", JSON.stringify(currentUser));
-                                window.location.href = "/index.html";
+                                window.location.href = "/main.html";
                             }
                         })
                 }
@@ -79,11 +79,6 @@ export const authThentication = {
         if (currentUser) {
             const unsub = onSnapshot(doc(db, "users", currentUser.id), async (docum) => {
                 localStorage.setItem("userData", JSON.stringify(docum.data()));
-                // const currentUser = doc(db, "users", docum.data().id);
-
-                // await updateDoc(currentUser, {
-                //     lastLoginAt: serverTimestamp()
-                // });
             });
         }
     }

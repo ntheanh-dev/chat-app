@@ -2,7 +2,7 @@ import {
     fetchCurrentUserConversation, fetchUserById, fetUsersByName,
     unFriendRequest, addFriendRequest, unRequestAddFriend, aceeptResquest,
     unAcceptRequest, getCurrentUserData, getTimeElapsed, addDocument, setSelectedChat,
-    getSelectedChat, fetchConverstationByRecieverId, fetchAllCurrentMessages
+    getSelectedChat, fetchConverstationByRecieverId, fetchAllCurrentMessages, fetchLastMessages
 } from '../firebase/service.js';
 import {
     getFirestore, getDoc, updateDoc, arrayUnion, arrayRemove, doc, setDoc, addDoc,
@@ -16,7 +16,6 @@ var incomingRequestList = ["opportunity@life.com"];
 var outgoingRequestList = ["hope@life.com"];
 var peopleList = ["stranger@life.com"];
 var friendsList = ["friend@life.com", "friend@life.com"];
-var currentConversationId;
 var chatOn = false;
 
 var menu = document.getElementById('menu');
@@ -176,67 +175,6 @@ for (var i = 0; i < menuBtns.length; i++) {
 }
 
 /************************AUTH*********************************/
-// signUpForm.addEventListener('submit', (e) => {
-//     e.preventDefault();
-//     const email = signUpForm['signup-email'].value;
-//     const password = signUpForm['signup-password'].value;
-//     const confirmPassword = signUpForm['signup-confirmPassword'].value;
-//     if (password != confirmPassword) {
-//         signUpForm.querySelector('.error').innerHTML = 'Password Confirmation Failed!';
-//     }
-//     else {
-//         // Create User
-//         document.getElementById('signUpBtnText').classList.add('hide');
-//         document.getElementById('signUpBtnIcon').classList.remove('hide');
-
-//         setTimeout(() => {
-
-//             document.getElementById('signUpBtnText').classList.remove('hide');
-//             document.getElementById('signUpBtnIcon').classList.add('hide');
-//             signedIn.classList.remove('hide');
-//             signedOut.classList.add('hide');
-//             signUpForm.reset();
-
-//             localStorage.setItem("auth", "signedIn");
-//             changeUI("signedUp");
-
-//         }, 3000);
-
-//         // Handle Error
-//         // document.getElementById('signUpBtnText').classList.remove('hide');
-//         // document.getElementById('signUpBtnIcon').classList.add('hide');
-//         // signUpForm.querySelector('.error').innerHTML = err.message;
-//     }
-// });
-
-// // Handling Sign In
-// signInForm.addEventListener('submit', (e) => {
-//     e.preventDefault();
-//     const email = signInForm['signin-email'].value;
-//     const password = signInForm['signin-password'].value;
-//     // Sign the User In
-//     document.getElementById('signInBtnText').classList.add('hide');
-//     document.getElementById('signInBtnIcon').classList.remove('hide');
-
-//     setTimeout(() => {
-
-//         document.getElementById('signInBtnText').classList.remove('hide');
-//         document.getElementById('signInBtnIcon').classList.add('hide');
-//         signedIn.classList.remove('hide');
-//         signedOut.classList.add('hide');
-//         signInForm.reset();
-
-//         // localStorage.setItem("auth", "signedIn");
-//         changeUI("signedIn");
-
-//     }, 3000);
-
-//     // Handle Error
-//     // document.getElementById('signInBtnText').classList.remove('hide');
-//     // document.getElementById('signInBtnIcon').classList.add('hide');
-//     // signInForm.querySelector('.error').innerHTML = err.message;
-// });
-
 // // Handling Sign Out
 signOutBtn.addEventListener('click', (e) => {
     e.preventDefault();
@@ -608,16 +546,6 @@ Element.prototype.appendAfter = function (element) {
 function displayFriends() {
     document.getElementById('friendsDiv').innerHTML = "";
     const currentUser = getCurrentUserData();
-    // Khong co onSnapshot
-    // fetchUserById(currentUser.id)
-    //     .then(user => {
-    //         if (user.listFriend.length > 0) {
-    //             user.listFriend.map(async friendId => {
-    //                 const result = await fetchUserById(friendId)
-    //                 renderFriend(result)
-    //             })
-    //         }
-    //     })
     const { listFriend } = getCurrentUserData();
     if (listFriend && listFriend.length > 0) {
         listFriend.map(async friendId => {
@@ -715,27 +643,28 @@ function chatWithFriend(friend, messageFriendBtn) {
         messageFriendBtn.classList.remove('loadingIcon');
         messageFriendBtn.appendChild(document.createTextNode("message"));
 
-        openConversation(friend);
+        openConversation(friend, 'openFromFriendDiv');
 
     }, 2000);
 }
 /************************************ CHATS SECTION ******************************************/
 async function displayChats() {
     document.getElementById('chatsDiv').innerHTML = "";
-    renderChat(0, "friend@life.com", "Enjoy never ending happiness...", "1d ago", 3);
-    renderChat(1, "friend@life.com", "Enjoy never ending happiness...", "1d ago", 3);
-    //////////fetch all conversation ////////////
-    // fetchCurrentUserConversation()
-    //     .then(friendIdChatList => {
-    //         if (friendIdChatList) {
-    //             ///mo chat cu
-    //         }
-    //     })
+    // renderChat(0, "friend@life.com", "Enjoy never ending happiness...", "1d ago", 3);
+    // renderChat(1, "friend@life.com", "Enjoy never ending happiness...", "1d ago", 3);
     const chats = await fetchCurrentUserConversation();
-
+    chats.map(async chat => {
+        const friendId = chat.members.filter(id => id !== getCurrentUserData().id)
+        const friend = await fetchUserById(friendId[0])
+        const messages = await fetchLastMessages(chat.id)
+        const lastMessage = messages.sort((a, b) => b.createAt - a.createAt)[0]
+        if (lastMessage) {
+            renderChat(friend, lastMessage.text, getTimeElapsed(lastMessage.createAt.seconds), 1, chat);
+        }
+    })
 }
 
-function renderChat(friend, lastMessage, lastAt, notification) {
+function renderChat(friend, lastMessage, lastAt, notification, chat) {
     var chatItem = document.createElement('li');
     chatItem.id = "chatItem";
     chatItem.classList.add('row');
@@ -801,9 +730,14 @@ function renderChat(friend, lastMessage, lastAt, notification) {
 
     chatItem.addEventListener('click', (e) => {
         e.preventDefault();
-        currentConversationId = id;
-        // vao trong ui chat
-        openConversation(friend);
+        setSelectedChat({
+            id: chat.id,
+            name: friend.name,
+            email: friend.email,
+            photoURL: friend.photoURL
+        })
+
+        openConversation(friend, 'openFromChatSection');
     });
 
     document.getElementById('chatsDiv').appendChild(chatItem);
@@ -997,7 +931,7 @@ function renderImage(path, type, sender) {
     document.querySelector("#messagesDiv").scrollTop = document.querySelector("#messagesDiv").scrollHeight;
 }
 
-async function openConversation(friend) {
+async function openConversation(friend, type) {
     const { id, name, email, photoURL } = friend
     const currentUserId = getCurrentUserData().id
     groupsBtn.parentElement.classList.remove('active');
@@ -1015,36 +949,42 @@ async function openConversation(friend) {
     document.querySelector("#messagesDiv").innerHTML = "";
     chatOn = true;
     // fetchAllmessage
-    const hasConverstation = await fetchConverstationByRecieverId(id);
-    setSelectedChat({
-        id: hasConverstation ? hasConverstation.id : getSelectedChat().id,
-        name: name,
-        email: email,
-        photoURL: photoURL
-    })
-    if (hasConverstation) {
+    if (type === "openFromChatSection") {
         subscrigeMessageDb()
-    } else {
-        addDocument('converstations', {
-            members: [currentUserId, id],
-            createAt: serverTimestamp(),
+    } else if (type === "openFromFriendDiv") {
+        const hasConverstation = await fetchConverstationByRecieverId(id);
+        setSelectedChat({
+            id: hasConverstation ? hasConverstation.id : getSelectedChat().id,
+            name: name,
+            email: email,
+            photoURL: photoURL
         })
+        if (hasConverstation) {
+            subscrigeMessageDb()
+        } else {
+            addDocument('converstations', {
+                members: [currentUserId, id],
+                createAt: serverTimestamp(),
+            })
+        }
     }
+
 }
 async function subscrigeMessageDb() {
     const { id, name } = getCurrentUserData();
     const selectedChatid = getSelectedChat().id;
     let db = getFirestore();
-    const q = query(collection(db, "messages"), where("conversationId", "==", selectedChatid));
+    const q = query(collection(db, "messages"), orderBy("createAt"));
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
         querySnapshot.docChanges().forEach((change) => {
             if (change.type === "added") {
-                const { text, createAt, senderId } = change.doc.data();
-                if (senderId === id) {
-                    renderMessage(text, 'receiver', name)
-                } else {
-                    renderMessage(text, 'sent', getSelectedChat().name)
-                }
+                const { text, createAt, senderId, conversationId } = change.doc.data();
+                if (conversationId === selectedChatid)
+                    if (senderId === id) {
+                        renderMessage(text, 'receiver', name)
+                    } else {
+                        renderMessage(text, 'sent', getSelectedChat().name)
+                    }
             }
         });
     });

@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
+
+    <link rel="stylesheet" href="css/sideNav.css" />
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/scrollBar.css" />
+
+    <title>CHAT</title>
+
+    <!-- ==================Firebase============== -->
+
+    <script src="https://www.gstatic.com/firebasejs/9.13.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.13.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/ui/6.0.2/firebase-ui-auth.js"></script>
+
+    <link
+      type="text/css"
+      rel="stylesheet"
+      href="https://www.gstatic.com/firebasejs/ui/6.0.2/firebase-ui-auth.css"
+    />
+  </head>
+  <body>
+    <div id="messenger">
+      <div id="signed-in" class="row">
+        <div id="menu" class="col">
+          <div class="center profile">
+            <div id="profileInfo">
+              <img id="profilePicture" src="" alt="" class="responsive-img" />
+              <p id="profileName"></p>
+              <p id="profileStatus">online</p>
+            </div>
+          </div>
+
+          <div class="options">
+            <ul>
+              <li class="item chats active">
+                <a id="chatsBtn" href=""
+                  ><span class="material-icons left" style="margin-right: 1rem"
+                    >chat</span
+                  >Chats</a
+                >
+              </li>
+
+              <li class="item groups">
+                <a id="groupsBtn" href=""
+                  ><span class="material-icons left" style="margin-right: 1rem"
+                    >group_add</span
+                  >Groups</a
+                >
+              </li>
+
+              <li class="item friends">
+                <a id="friendsBtn" href=""
+                  ><span class="material-icons left" style="margin-right: 1rem"
+                    >how_to_reg</span
+                  >Friends</a
+                >
+              </li>
+
+              <li class="item people">
+                <a id="peopleBtn" href=""
+                  ><span class="material-icons left" style="margin-right: 1rem"
+                    >person_add</span
+                  >People</a
+                >
+              </li>
+
+              <li class="item signOut">
+                <a id="signOutBtn" href="">
+                  <i
+                    id="signOutBtnIcon"
+                    class="material-icons left"
+                    style="margin-right: 1rem; transform: rotate(180deg)"
+                    >exit_to_app</i
+                  >
+                  <span id="signOutBtnText">Sign Out</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div id="chatWindow" class="col">
+          <!-- To Display Chats -->
+          <div id="chats" class="">
+            <div class="row titleBar">
+              <div id="navDiv" class="col">
+                <a id="menuBtn" href="" class="hamburger">
+                  <div>
+                    <i id="menuBtnIcon" class="material-icons">menu</i>
+                  </div>
+                </a>
+                <p id="navTitle">
+                  <a href="" id="navBtn" class="white-text disable">
+                    <span class="navText">Chats</span>
+                  </a>
+                </p>
+              </div>
+            </div>
+            <div class="row main">
+              <ul id="chatsDiv" class="col">
+                <!-- 
+                            <li id="chatItem" class="row"><img id="picture" src="img/icons/icon128.png" class="col">
+                                <div id="details" class="col">
+                                    <div id="detailsInside">
+                                        <p id="chatTitle">friend@life.com</p>
+                                        <p id="chatLastMessage">Enjoy never ending happiness...</p>
+                                    </div>
+                                </div>
+                                <div id="status" class="col">
+                                    <div id="statusInside">
+                                        <p id="chatLastModified">19:02 16-04-2020</p>
+                                    </div>
+                                </div>
+                            </li>
+
+                            <li id="chatItem" class="row"><img id="picture" src="img/icons/icon128.png" class="col">
+                                <div id="details" class="col">
+                                    <div id="detailsInside">
+                                        <p id="chatTitle">friend@life.com</p>
+                                        <p id="chatLastMessage">Enjoy never ending happiness...</p>
+                                    </div>
+                                </div>
+                                <div id="status" class="col">
+                                    <div id="statusInside">
+                                        <p id="chatLastModified">19:02 16-04-2020</p>
+                                    </div>
+                                </div>
+                            </li> -->
+              </ul>
+            </div>
+          </div>
+
+          <!-- To Display Conversations -->
+          <div id="conversations" class="hide">
+            <div class="row titleBar">
+              <div id="navDiv" class="col">
+                <a id="backBtn" href="" class="">
+                  <div>
+                    <i id="backBtnArrow" class="material-icons">arrow_back</i>
+                  </div>
+                </a>
+                <p id="navTitle">
+                  <a href="" id="navBtn" class="white-text disable">
+                    <span id="conversationTitle" class="navText"
+                      >friend@life.com</span
+                    >
+                  </a>
+                </p>
+              </div>
+            </div>
+            <div class="row main">
+              <div id="conversationDiv" class="col">
+                <div id="messagesDiv">
+                  <!-- <div class="message"><span class="sender">you@life.com</span><br>
+                                    <p class="senderMessageBody">Hey!</p>
+                                </div>
+                                <div class="message"><span class="receiver">friend@life.com</span><br>
+                                    <p class="receiverMessageBody">Hello!</p>
+                                </div>
+                                <div class="imageMessage"><span class="sender">you@life.com</span><br><span
+                                        class="imageBody"><img src="./img/image.jpg" class="senderImgBody"></span></div>
+                                <div class="message"><span class="receiver">friend@life.com</span><br>
+                                    <p class="receiverMessageBody">It's Beautiful</p>
+                                </div>
+                                <div class="message"><span class="sender">you@life.com</span><br>
+                                    <p class="senderMessageBody"><a href="https://www.youtube.com/" target="_blank"
+                                            style="color: blue; text-decoration: underline;">https://www.youtube.com/</a>
+                                    </p>
+                                </div> -->
+                </div>
+                <div id="sendDiv" class="row">
+                  <input
+                    placeholder="Send Message..."
+                    id="sendMessage"
+                    type="text"
+                    class="col"
+                  />
+
+                  <div
+                    id="fileBtn"
+                    class="file-field input-field btn col hoverable"
+                  >
+                    <i id="imageIcon" class="material-icons">insert_photo</i>
+                    <input type="file" name="" value="" id="fileInput" />
+                  </div>
+
+                  <a href="" id="sendBtn" class="btn col">
+                    <i id="sendIcon" class="material-icons">send</i>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- To Display Friends -->
+          <div id="friends" class="hide">
+            <div class="row titleBar">
+              <div id="navDiv" class="col">
+                <a id="menuBtn" href="" class="hamburger">
+                  <div>
+                    <i id="menuBtnIcon" class="material-icons">menu</i>
+                  </div>
+                </a>
+                <p id="navTitle">
+                  <a href="" id="navBtn" class="white-text disable">
+                    <span class="navText">Friends</span>
+                  </a>
+                </p>
+              </div>
+            </div>
+            <div class="row main">
+              <ul id="friendsDiv" class="col">
+                <!-- <li id="friendItem" class="row"><img id="picture" src="img/icons/icon128.png" class="col">
+                                <div id="details" class="col">
+                                    <div id="detailsInside">
+                                        <p id="friendTitle">friend@life.com</p>
+                                        <p id="friendLastActive">active 3w ago</p>
+                                    </div>
+                                </div>
+                                <div id="status" class="col">
+                                    <div id="statusInside"><a id="friendChatWith" href=""><i
+                                                class="material-icons messageFriend">message</i></a><a
+                                            id="friendViewProfile" href=""><i
+                                                class="material-icons viewFriendProfile">info</i></a></div>
+                                </div>
+                            </li>
+                            <li id="friendItem" class="row"><img id="picture" src="img/icons/icon128.png" class="col">
+                                <div id="details" class="col">
+                                    <div id="detailsInside">
+                                        <p id="friendTitle">friend@life.com</p>
+                                        <p id="friendLastActive">active 3w ago</p>
+                                    </div>
+                                </div>
+                                <div id="status" class="col">
+                                    <div id="statusInside"><a id="friendChatWith" href=""><i
+                                                class="material-icons messageFriend">message</i></a><a
+                                            id="friendViewProfile" href=""><i
+                                                class="material-icons viewFriendProfile">info</i></a></div>
+                                </div>
+                            </li> -->
+              </ul>
+            </div>
+          </div>
+
+          <!-- To Display People -->
+          <div id="people" class="hide">
+            <div class="row titleBar">
+              <div id="navDiv" class="col">
+                <a id="menuBtn" href="" class="hamburger">
+                  <div>
+                    <i id="menuBtnIcon" class="material-icons">menu</i>
+                  </div>
+                </a>
+                <p id="navTitle">
+                  <span id="navBtn" class="white-text disable">
+                    <span class="navText searchNavText">Search</span>
+                    <span class="navText requestsNavText">Requests</span>
+                  </span>
+                </p>
+              </div>
+            </div>
+            <div class="row main">
+              <ul id="peopleDiv" class="col">
+                <div id="searchPeopleDiv" class="row searchSection">
+                  <a href="" id="searchPeopleBtn" class="brn col">
+                    <i id="searchPeopleIcon" class="material-icons">search</i>
+                  </a>
+
+                  <input
+                    id="searchPeopleInput"
+                    placeholder="Search People By Email"
+                    type="text"
+                    class="col"
+                  />
+                </div>
+
+                <div class="requestsSection hide">
+                  <div id="requestsLabelDiv">
+                    <p id="requestsLabel">Requests</p>
+                  </div>
+                  <!-- <div id="notFoundDiv">
+                    <p id="notFoundP">No Requests Available</p>
+                  </div> -->
+                </div>
+              </ul>
+            </div>
+          </div>
+
+          <!-- To Display Groups -->
+          <div id="groups" class="hide">
+            <div class="row titleBar">
+              <div id="navDiv" class="col">
+                <a id="menuBtn" href="" class="hamburger">
+                  <div>
+                    <i id="menuBtnIcon" class="material-icons">menu</i>
+                  </div>
+                </a>
+                <p id="navTitle">
+                  <a href="" id="navBtn" class="white-text disable">
+                    <span class="navText">Groups</span>
+                  </a>
+                </p>
+              </div>
+            </div>
+            <div class="row main">
+              <div id="conversationDiv" class="col"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-beta/js/materialize.min.js"></script>
+    <script type="module" src="js/app.js"></script>
+  </body>
+</html>
