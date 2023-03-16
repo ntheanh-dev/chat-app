@@ -199,7 +199,7 @@ export function fetchConverstationByRecieverId(friendId) {
     return new Promise((resolve, reject) => {
         const db = getFirestore();
         const q = query(collection(db, "converstations"),
-            where("members", 'array-contains-any', [id, friendId])
+            where("members", 'in', [[id, friendId], [friendId, id]])
         )
         onSnapshot(q, (snapshot) => {
             let result = null;
@@ -214,21 +214,34 @@ export function fetchCurrentUserConversation() {
     const { id } = getCurrentUserData();
     return new Promise((resolve, reject) => {
         const db = getFirestore();
-        const q = query(collection(db, "messages"),
+        const q = query(collection(db, "converstations"),
             where("member", 'array-contains', id)
         )
         onSnapshot(q, (snapshot) => {
-            let friendId = []
             snapshot.docs.forEach((doc) => {
-                const friend = { ...doc.data() }
-                friend.push(friend.members.filter(member => member !== id))
+                resolve(doc.data())
             })
-            resolve(friendId)
+        })
+    })
+}
+export function fetchAllCurrentMessages() {
+    const { id } = getSelectedChat();
+    let db = getFirestore();
+    return new Promise((resolve, reject) => {
+        const q = query(collection(db, "messages"),
+            where("conversationId", '==', id)
+        )
+        onSnapshot(q, (snapshot) => {
+            let result = [];
+            snapshot.docs.forEach((doc) => {
+                result.push({ ...doc.data() })
+            })
+            resolve(result)
         })
     })
 }
 export function getCurrentUserData() {
-    return JSON.parse(localStorage.getItem("userData")) || null
+    return JSON.parse(localStorage.getItem("userData")) || null;
 }
 export function setSelectedChat(friendId) {
     localStorage.setItem("selectedChat", JSON.stringify(friendId));

@@ -55,6 +55,7 @@ export const authThentication = {
         signOut(auth).then(() => {
             // Sign-out successful.
             localStorage.removeItem("userData");
+            localStorage.removeItem("selecteChat");
             window.location.href = "./signIn.html";
         }).catch((error) => {
             // An error happened.

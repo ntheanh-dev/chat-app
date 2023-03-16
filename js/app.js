@@ -2,7 +2,7 @@ import {
     fetchCurrentUserConversation, fetchUserById, fetUsersByName,
     unFriendRequest, addFriendRequest, unRequestAddFriend, aceeptResquest,
     unAcceptRequest, getCurrentUserData, getTimeElapsed, addDocument, setSelectedChat,
-    getSelectedChat, fetchConverstationByRecieverId
+    getSelectedChat, fetchConverstationByRecieverId, fetchAllCurrentMessages
 } from '../firebase/service.js';
 import {
     getFirestore, getDoc, updateDoc, arrayUnion, arrayRemove, doc, setDoc, addDoc,
@@ -399,7 +399,7 @@ function renderPeople(type, userInfo) {
 
     var picture = document.createElement('img');
     picture.id = "picture";
-    picture.src = "img/icons/icon128.png";
+    picture.src = "";
     picture.classList.add('col');
     peopleItem.appendChild(picture);
 
@@ -720,18 +720,19 @@ function chatWithFriend(friend, messageFriendBtn) {
     }, 2000);
 }
 /************************************ CHATS SECTION ******************************************/
-function displayChats() {
+async function displayChats() {
     document.getElementById('chatsDiv').innerHTML = "";
     renderChat(0, "friend@life.com", "Enjoy never ending happiness...", "1d ago", 3);
     renderChat(1, "friend@life.com", "Enjoy never ending happiness...", "1d ago", 3);
     //////////fetch all conversation ////////////
-    fetchCurrentUserConversation()
-        .then(friendIdChatList => {
-            if (friendIdChatList) {
-                ///mo chat cu
-                renderChat()
-            }
-        })
+    // fetchCurrentUserConversation()
+    //     .then(friendIdChatList => {
+    //         if (friendIdChatList) {
+    //             ///mo chat cu
+    //         }
+    //     })
+    const chats = await fetchCurrentUserConversation();
+
 }
 
 function renderChat(friend, lastMessage, lastAt, notification) {
@@ -741,7 +742,7 @@ function renderChat(friend, lastMessage, lastAt, notification) {
 
     var picture = document.createElement('img');
     picture.id = "picture";
-    picture.src = "img/icons/icon128.png";
+    picture.src = "";
     picture.classList.add('col');
 
     var details = document.createElement('div');
@@ -860,7 +861,7 @@ function resetSendDiv() {
 
 // HAVE A LOOK
 // Send two messages for UI demonstration purpose
-function sendMessage(data) {
+async function sendMessage(data) {
     // Send to firestore database
     const { message, type, senderName, senderId } = data
     const { picture
@@ -1022,47 +1023,29 @@ async function openConversation(friend) {
         photoURL: photoURL
     })
     if (hasConverstation) {
-        subscrigeMessageDb();
+        subscrigeMessageDb()
     } else {
         addDocument('converstations', {
             members: [currentUserId, id],
             createAt: serverTimestamp(),
         })
     }
-
 }
 async function subscrigeMessageDb() {
-
-    // const messages = await fetchAllmessageAtCurrentConver();
-
-    // messages.map(message => {
-    //     console.log(message)
-    //     const { text, createAt, senderId } = message;
-    //     const currentUserName = getCurrentUserData().name;
-    //     const selectedChatUserName = getSelectedChat().name;
-    //     if (senderId === id) {
-    //         renderMessage(text, 'sent', currentUserName)
-    //     } else {
-    //         renderMessage(text, 'receiver', selectedChatUserName)
-    //     }
-    // })
-
     const { id, name } = getCurrentUserData();
     const selectedChatid = getSelectedChat().id;
     let db = getFirestore();
     const q = query(collection(db, "messages"), where("conversationId", "==", selectedChatid));
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
-        console.log('visited')
         querySnapshot.docChanges().forEach((change) => {
             if (change.type === "added") {
                 const { text, createAt, senderId } = change.doc.data();
                 if (senderId === id) {
-                    renderMessage(text, 'sent', name)
-                } else {
                     renderMessage(text, 'receiver', name)
+                } else {
+                    renderMessage(text, 'sent', getSelectedChat().name)
                 }
             }
-
         });
     });
 }
