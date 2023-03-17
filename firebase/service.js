@@ -4,6 +4,8 @@ import {
 }
     from "https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-auth.js";
+import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-storage.js";
+
 export const addDocument = (collectionName, data) => {
     let db = getFirestore();
     (async () => {
@@ -256,6 +258,41 @@ export function fetchLastMessages(conversationId) {
             resolve(result)
         })
     })
+}
+export function uploadImage(file) {
+    const storage = getStorage();
+    const storegeRef = ref(storage, "Image/" + file.name)
+    const uploadTask = uploadBytesResumable(storegeRef, file)
+    uploadTask.on('state_changed',
+        (snapshot) => {
+            // Observe state change events such as progress, pause, and resume
+            // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
+            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+            console.log('Upload is ' + progress + '% done');
+            if (progress === 100) {
+                if (document.querySelector('.uploading')) {
+                    document.querySelector('.uploading').remove()
+                }
+            }
+        },
+        (error) => {
+            console.log(error)
+        },
+        () => {
+            getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+                const { id, name, picture } = getCurrentUserData();
+                addDocument('messages', {
+                    text: '',
+                    imgURL: downloadURL,
+                    senderId: id,
+                    senderName: name,
+                    picture: picture,
+                    conversationId: getSelectedChat().id,
+                    createAt: serverTimestamp(),
+                })
+            });
+        }
+    );
 }
 ////////////////Localstorage////////////
 export function getCurrentUserData() {

@@ -2,7 +2,8 @@ import {
     fetchCurrentUserConversation, fetchUserById, fetUsersByName,
     unFriendRequest, addFriendRequest, unRequestAddFriend, aceeptResquest,
     unAcceptRequest, getCurrentUserData, getTimeElapsed, addDocument, setSelectedChat,
-    getSelectedChat, fetchConverstationByRecieverId, fetchAllCurrentMessages, fetchLastMessages
+    getSelectedChat, fetchConverstationByRecieverId, fetchAllCurrentMessages, fetchLastMessages,
+    uploadImage
 } from '../firebase/service.js';
 import {
     getFirestore, getDoc, updateDoc, arrayUnion, arrayRemove, doc, setDoc, addDoc,
@@ -15,7 +16,7 @@ authThentication.init();
 var incomingRequestList = ["opportunity@life.com"];
 var outgoingRequestList = ["hope@life.com"];
 var chatOn = false;
-var unsubscribe = () => { };
+var unSubscribeConverstation = () => { };
 
 var menu = document.getElementById('menu');
 var chatWindow = document.getElementById('chatWindow');
@@ -84,6 +85,7 @@ document.addEventListener('DOMContentLoaded', function () {
 backBtn.addEventListener('click', function (e) {
     e.preventDefault();
     chatOn = false;
+    unSubscribeConverstation()
     chatsBtn.click();
 });
 
@@ -129,6 +131,7 @@ function setActive(x) {
         chatsBtn.parentElement.classList.add('active');
         chats.classList.remove('hide');
         chatOn = false;
+        unSubscribeConverstation();
     } else if (x === groupsBtn) {
         currently = "groups";
         groupsBtn.parentElement.classList.add('active');
@@ -737,7 +740,7 @@ function renderChat(friend, lastMessage, lastAt, notification, chat) {
             photoURL: friend.photoURL
         })
 
-        unsubscribe();
+        unSubscribeConverstation();
         openConversation(friend, 'openFromChatSection');
     });
 
@@ -748,12 +751,7 @@ function renderChat(friend, lastMessage, lastAt, notification, chat) {
 sendBtn.addEventListener('click', function (e) {
     e.preventDefault();
     const { name, id } = getCurrentUserData()
-    if (fileInput.value) {
-        sendBtn.disabled = true;
-        sendImage(currentFile);
-        resetSendDiv();
-    }
-    else if (sendMessageInput.value) {
+    if (sendMessageInput.value) {
         sendBtn.disabled = true;
         var message = sendMessageInput.value;
         sendMessage({
@@ -766,26 +764,19 @@ sendBtn.addEventListener('click', function (e) {
     }
 });
 
-// Triggered when a file is selected via the media picker.
-fileInput.addEventListener('input', onMediaFileSelected);
-function onMediaFileSelected(event) {
+fileInput.addEventListener('input', (event) => {
     event.preventDefault();
-    sendMessageInput.value = fileInput.value;
     var file = event.target.files[0];
-    currentFile = file;
-
     // Check if the file is an image.
     if (!file.type.match('image.*')) {
-        var data = {
-            message: 'You can only share images',
-            timeout: 2000
-        };
-        alert(data);
+        alert('You can only share images');
         resetSendDiv();
         return;
+    } else {
+        renderImage("./image/imageSkeleton.png", "uploading", getCurrentUserData().name)
+        uploadImage(file)
     }
-}
-
+});
 function resetSendDiv() {
     if (sendMessageInput.value) {
         sendBtn.disabled = false;
@@ -794,8 +785,6 @@ function resetSendDiv() {
     }
 }
 
-// HAVE A LOOK
-// Send two messages for UI demonstration purpose
 async function sendMessage(data) {
     // Send to firestore database
     const { message, type, senderName, senderId } = data
@@ -810,27 +799,7 @@ async function sendMessage(data) {
         createAt: serverTimestamp(),
     })
 
-    // renderMessage(message, type, senderName);
-    // setTimeout(() => {
-    //     renderMessage(message, "received", "friend@life.com");
-    // }, 2000);
 }
-
-// HAVE A LOOK
-// Send two messages for UI demonstration purpose
-function sendImage(path) {
-    // alert(path + "\n" + "Image Sent");
-    renderImage("./img/image.jpg", "sent", "you@life.com");
-
-    // For Demonstration Purpose
-    // Receiver will automatically reply the same message after 2 seconds
-    setTimeout(() => {
-        renderImage("./img/image.jpg", "received", "friend@life.com");
-    }, 2000);
-
-    ////Tao va luu mot message moi//////////
-}
-
 function renderMessage(message, type, sender) {
     var messageDiv = document.createElement('div');
     messageDiv.classList.add("message");
@@ -909,6 +878,12 @@ function renderImage(path, type, sender) {
     var img = document.createElement('img');
     img.src = path;
 
+    // var bar = document.createElement('div')
+    // bar.classList.add('uploading')
+    // var process = document.createElement('div')
+    // process.classList.add('process')
+    // bar.appendChild(process)
+
     if (type == "sent") {
         senderSpan.classList.add("sender");
         img.classList.add("senderImgBody");
@@ -928,10 +903,15 @@ function renderImage(path, type, sender) {
     messageDiv.appendChild(brDiv);
     messageDiv.appendChild(messageImageSpan);
 
+    if (type == "uploading") {
+        img.classList.add('imgBlur')
+        messageDiv.classList.add('uploading')
+        // messageDiv.appendChild(bar);
+    }
+
     document.querySelector("#messagesDiv").appendChild(messageDiv);
     document.querySelector("#messagesDiv").scrollTop = document.querySelector("#messagesDiv").scrollHeight;
 }
-
 async function openConversation(friend, type) {
     const { id, name, email, photoURL } = friend
     const currentUserId = getCurrentUserData().id
@@ -975,15 +955,15 @@ async function subscrigeMessageDb() {
     const { id, name } = getCurrentUserData();
     const selectedChatid = getSelectedChat().id;
     let db = getFirestore();
-    const q = query(collection(db, "messages"), where('conversationId', '==', selectedChatid), orderBy('createAt'));
-    unsubscribe = onSnapshot(q, (querySnapshot) => {
+    const q = query(collection(db, "messages"), where('conversationId', '==', selectedChatid), orderBy('createAt'), limit(30));
+    unSubscribeConverstation = onSnapshot(q, (querySnapshot) => {
         querySnapshot.docChanges().forEach((change) => {
             if (change.type === "added") {
                 const { text, createAt, senderId } = change.doc.data();
                 if (senderId === id) {
-                    renderMessage(text, 'receiver', name)
+                    text ? renderMessage(text, 'receiver', name) : renderImage(change.doc.data().imgURL, 'receiver', name)
                 } else {
-                    renderMessage(text, 'sent', getSelectedChat().name)
+                    text ? renderMessage(text, 'sent', name) : renderImage(change.doc.data().imgURL, 'sent', name)
                 }
             }
         });

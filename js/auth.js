@@ -1,11 +1,13 @@
 // import { initializeApp } from "firebase/app";
-import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut, getAdditionalUserInfo }
+import { getAuth, signInWithPopup, GoogleAuthProvider, FacebookAuthProvider, signOut, getAdditionalUserInfo }
     from "https://www.gstatic.com/firebasejs/9.17.1/firebase-auth.js";
 import { doc, onSnapshot, getFirestore, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js";
+import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-storage.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-analytics.js";
 import { addDocument, getCurrentUserData, fetchUserById, generateKeywords } from "../firebase/service.js";
 var signInWithGoogle = document.getElementById('signInWithGoogle');
+var singInWithFacebook = document.getElementById('singInWithFacebook');
 
 export const authThentication = {
     // FirebaseUI config.
@@ -29,13 +31,21 @@ export const authThentication = {
                 const token = credential.accessToken;
 
                 const { isNewUser, profile } = getAdditionalUserInfo(result)
-                console.log(isNewUser)
                 if (isNewUser) {
                     profile.lastLoginAt = result.user.metadata.lastLoginAt
                     profile.keywords = generateKeywords(profile.name)
                     profile.listFriend = []
                     profile.listRequest = []
-                    addDocument('users', profile)
+                    addDocument('users', {
+                        name: profile.name,
+                        picture: profile.picture,
+                        email: profile.email,
+                        id: profile.id,
+                        lastLoginAt: result.user.metadata.lastLoginAt,
+                        keywords: generateKeywords(profile.name),
+                        listFriend: [],
+                        listRequest: [],
+                    })
                     localStorage.setItem("userData", JSON.stringify(profile));
                     setTimeout(() => {
                         window.location.href = "/main.html";
@@ -53,12 +63,54 @@ export const authThentication = {
                 console.log(error)
             })
     },
+    signInWithFacebook() {
+        const provider = new FacebookAuthProvider();
+        const auth = getAuth();
+        signInWithPopup(auth, provider)
+            .then((result) => {
+                const credential = GoogleAuthProvider.credentialFromResult(result);
+                const token = credential.accessToken;
+
+                const { isNewUser, profile } = getAdditionalUserInfo(result)
+
+                console.log(profile)
+                console.log(result)
+                if (isNewUser) {
+                    addDocument('users', {
+                        name: profile.name,
+                        picture: result.user.photoURL,
+                        email: result.user.email,
+                        id: profile.id,
+                        lastLoginAt: result.user.metadata.lastLoginAt,
+                        keywords: generateKeywords(profile.name),
+                        listFriend: [],
+                        listRequest: [],
+                    })
+                    localStorage.setItem("userData", JSON.stringify(profile));
+                    setTimeout(() => {
+                        window.location.href = "/main.html";
+                    }, 2000);
+                } else {
+                    fetchUserById(profile.id)
+                        .then(currentUser => {
+                            if (currentUser) {
+                                localStorage.setItem("userData", JSON.stringify(currentUser));
+                                window.location.href = "/main.html";
+                            }
+                        })
+                }
+            }).catch((error) => {
+                console.log(error)
+            })
+
+    },
     signOut() {
         const auth = getAuth();
         signOut(auth).then(() => {
             // Sign-out successful.
             localStorage.removeItem("userData");
-            localStorage.removeItem("selecteChat");
+            localStorage.removeItem("selectedChat");
+            localStorage.removeItem("currently");
             window.location.href = "./index.html";
         }).catch((error) => {
             // An error happened.
@@ -76,6 +128,7 @@ export const authThentication = {
         };
         const app = initializeApp(firebaseConfig);
         const analytics = getAnalytics(app);
+        const storage = getStorage(app);
 
         const db = getFirestore();
         const currentUser = getCurrentUserData();
@@ -90,7 +143,22 @@ export const authThentication = {
 authThentication.init();
 
 if (signInWithGoogle) {
-    signInWithGoogle.addEventListener('click', async e => {
-        authThentication.signInWithGoogle();
+    signInWithGoogle.addEventListener('click', event => {
+        event.preventDefault();
+        const currentUser = getCurrentUserData();
+        if (currentUser)
+            window.location.href = "./main.html";
+        else
+            authThentication.signInWithGoogle();
+    })
+}
+if (singInWithFacebook) {
+    singInWithFacebook.addEventListener('click', event => {
+        event.preventDefault();
+        const currentUser = getCurrentUserData();
+        if (currentUser)
+            window.location.href = "./index.html";
+        else
+            authThentication.signInWithFacebook();
     })
 }
