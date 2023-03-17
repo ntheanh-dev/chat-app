@@ -3,7 +3,7 @@ import {
     unFriendRequest, addFriendRequest, unRequestAddFriend, aceeptResquest,
     unAcceptRequest, getCurrentUserData, getTimeElapsed, addDocument, setSelectedChat,
     getSelectedChat, fetchConverstationByRecieverId, fetchAllCurrentMessages, fetchLastMessages,
-    uploadImage
+    uploadImage, addConverstation
 } from '../firebase/service.js';
 import {
     getFirestore, getDoc, updateDoc, arrayUnion, arrayRemove, doc, setDoc, addDoc,
@@ -16,7 +16,7 @@ authThentication.init();
 var incomingRequestList = ["opportunity@life.com"];
 var outgoingRequestList = ["hope@life.com"];
 var chatOn = false;
-var unSubscribeConverstation = () => { };
+var unSubcribeMessage = null;
 
 var menu = document.getElementById('menu');
 var chatWindow = document.getElementById('chatWindow');
@@ -85,7 +85,7 @@ document.addEventListener('DOMContentLoaded', function () {
 backBtn.addEventListener('click', function (e) {
     e.preventDefault();
     chatOn = false;
-    unSubscribeConverstation()
+    unSubcribeMessage()
     chatsBtn.click();
 });
 
@@ -131,7 +131,6 @@ function setActive(x) {
         chatsBtn.parentElement.classList.add('active');
         chats.classList.remove('hide');
         chatOn = false;
-        unSubscribeConverstation();
     } else if (x === groupsBtn) {
         currently = "groups";
         groupsBtn.parentElement.classList.add('active');
@@ -219,23 +218,13 @@ $('.requestsNavText').onclick = (e) => {
     renderRequest();
 }
 function displayPeople() {
-    // document.getElementById('peopleDiv').innerHTML = peopleDivDefaultHtml;
-
-    // Lay list friend roi render
-
-    // Outgoing Requests Inserted
     outgoingRequestList.forEach(people => {
         renderPeople("outgoing", people);
     });
 
-    // Incoming Requests Inserted so
-    // Outgoings pushed down
     incomingRequestList.forEach(people => {
         renderPeople("incoming", people);
     });
-
-    // If there's no request available
-    // renderNotFound('requests');
 }
 function renderNotFound(type) {
     var notFoundDiv = document.createElement('div');
@@ -285,20 +274,24 @@ document.getElementById("searchPeopleInput").onkeydown = async (e) => {
         // }, 1000);
 
         const result = await fetUsersByName(e.target.value)
+        const { id } = getCurrentUserData();
         if (result.length === 0) {
             renderNotFound('searchResult');
             document.querySelector('#searchPeopleIcon').classList.remove('loadingIcon');
         } else {
             createWrapperAfterNode('ul', $('#searchPeopleDiv'), 'wapperSearchPeopleItem')
-            const { id } = getCurrentUserData();
-            result.filter(user => user.id !== id).map(user => {
-                if (user.listFriend.includes(id))
-                    renderPeople('searchResultFriend', user);
-                else
-                    renderPeople('searchResultGeneral', user);
-            })
+            const searchOutput = result.filter(user => user.id !== id)
+            if (searchOutput.length === 0) {
+                renderNotFound('searchResult');
+                document.querySelector('#searchPeopleIcon').classList.remove('loadingIcon');
+            } else
+                searchOutput.map(user => {
+                    if (user.listFriend.includes(id))
+                        renderPeople('searchResultFriend', user);
+                    else
+                        renderPeople('searchResultGeneral', user);
+                })
         }
-
     }
     if (e.target.value.length === 1) {
         cleanOutput();
@@ -319,7 +312,7 @@ function renderRequest() {
     //                 renderPeople('searchResultIncoming', userRequest);
     //             })
     //     })
-    if (listRequest && listRequest.length === 0)
+    if (listRequest.length === 0)
         renderNotFound('requests')
     else
         listRequest.map(async (uidRequest) => {
@@ -339,7 +332,7 @@ function renderPeople(type, userInfo) {
 
     var picture = document.createElement('img');
     picture.id = "picture";
-    picture.src = "";
+    picture.src = userInfo.picture;
     picture.classList.add('col');
     peopleItem.appendChild(picture);
 
@@ -407,7 +400,6 @@ function renderPeople(type, userInfo) {
 
     addFriend.addEventListener('click', (e) => {
         e.preventDefault();
-
         if (addFriend.innerHTML == "check") {
             handleFriendRequest("accept", userInfo.id, addFriend, rejectFriend);
         } else if (addFriend.innerHTML == "person_add") {
@@ -635,12 +627,14 @@ function renderFriend(friend) {
     document.getElementById('friendsDiv').appendChild(friendItem);
 }
 
-function chatWithFriend(friend, messageFriendBtn) {
+async function chatWithFriend(friend, messageFriendBtn) {
     messageFriendBtn.innerHTML = 'autorenew';
     messageFriendBtn.classList.add('loadingIcon');
 
+    const hasConverstation = await fetchConverstationByRecieverId(friend.id);
+    if (!hasConverstation)
+        addConverstation(friend)
     setTimeout(() => {
-
         messageFriendBtn.innerHTML = '';
         messageFriendBtn.classList.remove('loadingIcon');
         messageFriendBtn.appendChild(document.createTextNode("message"));
@@ -652,8 +646,7 @@ function chatWithFriend(friend, messageFriendBtn) {
 /************************************ CHATS SECTION ******************************************/
 async function displayChats() {
     document.getElementById('chatsDiv').innerHTML = "";
-    // renderChat(0, "friend@life.com", "Enjoy never ending happiness...", "1d ago", 3);
-    // renderChat(1, "friend@life.com", "Enjoy never ending happiness...", "1d ago", 3);
+    // renderChat(0, "theanh@gmail.com", "Helllooooo", "1d ago", 3);
     const chats = await fetchCurrentUserConversation();
     const { id } = getCurrentUserData();
     chats.map(async chat => {
@@ -737,10 +730,8 @@ function renderChat(friend, lastMessage, lastAt, notification, chat) {
             id: chat.id,
             name: friend.name,
             email: friend.email,
-            photoURL: friend.photoURL
+            picture: friend.picture
         })
-
-        unSubscribeConverstation();
         openConversation(friend, 'openFromChatSection');
     });
 
@@ -913,7 +904,7 @@ function renderImage(path, type, sender) {
     document.querySelector("#messagesDiv").scrollTop = document.querySelector("#messagesDiv").scrollHeight;
 }
 async function openConversation(friend, type) {
-    const { id, name, email, photoURL } = friend
+    const { id, name, email, picture } = friend
     const currentUserId = getCurrentUserData().id
     groupsBtn.parentElement.classList.remove('active');
     friendsBtn.parentElement.classList.remove('active');
@@ -927,36 +918,19 @@ async function openConversation(friend, type) {
     conversations.classList.remove('hide');
 
     document.getElementById('conversationTitle').innerHTML = name;
+    document.querySelector('.avata-chat-with').src = picture;
     document.querySelector("#messagesDiv").innerHTML = "";
     chatOn = true;
-    // fetchAllmessage
-    if (type === "openFromChatSection") {
-        subscrigeMessageDb()
-    } else if (type === "openFromFriendDiv") {
-        const hasConverstation = await fetchConverstationByRecieverId(id);
-        setSelectedChat({
-            id: hasConverstation ? hasConverstation.id : getSelectedChat().id,
-            name: name,
-            email: email,
-            photoURL: photoURL
-        })
-        if (hasConverstation) {
-            subscrigeMessageDb()
-        } else {
-            addDocument('converstations', {
-                members: [currentUserId, id],
-                createAt: serverTimestamp(),
-            })
-        }
-    }
-
+    if (unSubcribeMessage)
+        unSubcribeMessage();
+    subCribeMessageDb()
 }
-async function subscrigeMessageDb() {
+async function subCribeMessageDb() {
     const { id, name } = getCurrentUserData();
     const selectedChatid = getSelectedChat().id;
     let db = getFirestore();
     const q = query(collection(db, "messages"), where('conversationId', '==', selectedChatid), orderBy('createAt'), limit(30));
-    unSubscribeConverstation = onSnapshot(q, (querySnapshot) => {
+    unSubcribeMessage = onSnapshot(q, (querySnapshot) => {
         querySnapshot.docChanges().forEach((change) => {
             if (change.type === "added") {
                 const { text, createAt, senderId } = change.doc.data();

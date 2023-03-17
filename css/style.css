@@ -95,11 +95,22 @@ body {
 
 #navBtn {
   position: absolute;
-  right: 50%;
+  right: 280%;
   top: 50%;
   transform: translateY(-50%);
   margin: auto;
   display: flex;
+}
+
+.avata-chat-with {
+  height: 38px;
+  width: 38px;
+  border-radius: 50%;
+  position: absolute;
+  right: -30%;
+  top: 50%;
+  transform: translateY(-50%);
+  margin: auto;
 }
 
 #navBtn > .navText ~ .navText {
@@ -121,6 +132,7 @@ body {
 .navText {
   font-size: 20px;
   color: #00aff0;
+  white-space: nowrap;
 }
 
 #picture {

@@ -79,20 +79,6 @@ export const generateKeywords = (displayName) => {
 
     return keywords;
 };
-export const fetUserByName = (search) => {
-    const db = getFirestore();
-    const q = query(collection(db, "users"),
-        where("keywords", "array-contains", limit(5), search)
-    )
-    let users = []
-    onSnapshot(q, (snapshot) => {
-        snapshot.docs.forEach((doc) => {
-            users.push({ ...doc.data() })
-        })
-        window.listUserFetch = users
-    })
-    return users
-}
 export const fetUsersByName = (search) => {
     return new Promise((resolve, reject) => {
         const db = getFirestore();
@@ -117,7 +103,7 @@ export const fetchUserById = (id) => {
         onSnapshot(q, (snapshot) => {
             let user = null
             snapshot.docs.forEach((doc) => {
-                user = { ...doc.data() }
+                user = doc.data()
             })
             resolve(user);
         })
@@ -293,6 +279,23 @@ export function uploadImage(file) {
             });
         }
     );
+}
+export function addConverstation(friend) {
+    let db = getFirestore();
+    (async () => {
+        const newConversation = doc(collection(db, "converstations"));
+        await setDoc(newConversation, {
+            members: [getCurrentUserData().id, friend.id],
+            createAt: serverTimestamp(),
+            id: newConversation.id
+        });
+        setSelectedChat({
+            id: newConversation.id,
+            name: friend.name,
+            email: friend.email,
+            picture: friend.picture
+        })
+    })();
 }
 ////////////////Localstorage////////////
 export function getCurrentUserData() {
