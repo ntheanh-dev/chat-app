@@ -1,9 +1,8 @@
 import {
-    getFirestore, getDoc, updateDoc, arrayUnion, arrayRemove, doc, setDoc, addDoc,
+    getFirestore, updateDoc, arrayUnion, arrayRemove, doc, setDoc,
     onSnapshot, collection, query, where, orderBy, limit, serverTimestamp
 }
     from "https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-auth.js";
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-storage.js";
 
 export const addDocument = (collectionName, data) => {
@@ -234,14 +233,12 @@ export function fetchLastMessages(conversationId) {
     let db = getFirestore();
     return new Promise((resolve, reject) => {
         const q = query(collection(db, "messages"),
-            where("conversationId", '==', conversationId)
+            where("conversationId", '==', conversationId), orderBy('createAt'), limit(1)
         )
         onSnapshot(q, (snapshot) => {
-            let result = [];
             snapshot.docs.forEach((doc) => {
-                result.push({ ...doc.data() })
+                resolve(doc.data())
             })
-            resolve(result)
         })
     })
 }

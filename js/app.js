@@ -1,13 +1,12 @@
 import {
     fetchCurrentUserConversation, fetchUserById, fetUsersByName,
-    unFriendRequest, addFriendRequest, unRequestAddFriend, aceeptResquest,
+    addFriendRequest, unRequestAddFriend, aceeptResquest,
     unAcceptRequest, getCurrentUserData, getTimeElapsed, addDocument, setSelectedChat,
-    getSelectedChat, fetchConverstationByRecieverId, fetchAllCurrentMessages, fetchLastMessages,
+    getSelectedChat, fetchConverstationByRecieverId, fetchLastMessages,
     uploadImage, addConverstation
 } from '../firebase/service.js';
 import {
-    getFirestore, getDoc, updateDoc, arrayUnion, arrayRemove, doc, setDoc, addDoc,
-    onSnapshot, collection, query, where, orderBy, limit, serverTimestamp
+    getFirestore, onSnapshot, collection, query, where, orderBy, limit, serverTimestamp
 }
     from "https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore.js";
 import { authThentication } from './auth.js'
@@ -65,8 +64,8 @@ var peopleDivDefaultHtml =
 
 document.addEventListener('DOMContentLoaded', function () {
     const userData = getCurrentUserData();
-    $('#profilePicture').src = userData.picture || userData.picture
-    $('#profileName').innerHTML = userData.displayName || userData.name
+    $('#profilePicture').src = userData?.picture || ''
+    $('#profileName').innerHTML = userData?.name || ''
 
     // console.log(userData)
 
@@ -98,7 +97,7 @@ chatsBtn.addEventListener('click', function (e) {
 groupsBtn.addEventListener('click', function (e) {
     e.preventDefault();
     setActive(this);
-    alert("This is for you to make! " + "\n" + "Best of Luck")
+    alert("Comming soon")
     // displayGroups();
 });
 
@@ -164,7 +163,6 @@ function openTab(tabName) {
     }
     document.getElementById(tabName).style.display = "block";
 }
-
 // For Side Nav Toggle
 var menuBtns = document.querySelectorAll('#menuBtn');
 for (var i = 0; i < menuBtns.length; i++) {
@@ -174,7 +172,6 @@ for (var i = 0; i < menuBtns.length; i++) {
         menu.classList.add('show');
     });
 }
-
 /************************AUTH*********************************/
 // // Handling Sign Out
 signOutBtn.addEventListener('click', (e) => {
@@ -191,15 +188,10 @@ signOutBtn.addEventListener('click', (e) => {
 
         document.getElementById('chatsDiv').innerHTML = "";
         document.getElementById('friendsDiv').innerHTML = "";
-        // document.getElementById('peopleDiv').innerHTML = peopleDivDefaultHtml;
         document.getElementById('peopleDiv').innerHTML = '';
 
-    }, 3000);
+    }, 2000);
 
-    // Handle Error
-    // document.getElementById('signOutBtnIcon').innerHTML = "exit_to_app";
-    // document.getElementById('signOutBtnIcon').classList.remove('loadingIcon');
-    // alert('Ensure Internet Connection to Sign Out');
 });
 
 /************************************ PEOPLE SECTION ******************************************/
@@ -301,17 +293,6 @@ document.getElementById("searchPeopleInput").onkeydown = async (e) => {
 function renderRequest() {
     createWrapperAfterNode('ul', $('.requestsSection'), 'wapperRequestPeopleItem');
     const { listRequest } = getCurrentUserData()
-    //Khong co snapshot
-    // fetchUserById(id)
-    //     .then(user => {
-    //         if (user.listRequest.length === 0)
-    //             renderNotFound('requests')
-    //         else
-    //             user.listRequest.map(async (uidRequest) => {
-    //                 const userRequest = await fetchUserById(uidRequest)
-    //                 renderPeople('searchResultIncoming', userRequest);
-    //             })
-    //     })
     if (listRequest.length === 0)
         renderNotFound('requests')
     else
@@ -422,7 +403,7 @@ function renderPeople(type, userInfo) {
 
     viewPeopleProfile.addEventListener('click', (e) => {
         e.preventDefault();
-        alert("Set Up Profile Page Here!");
+        alert("Profile page is comming soon!");
     });
 
     peopleViewProfile.appendChild(viewPeopleProfile);
@@ -536,17 +517,25 @@ function GetElementInsideContainer(containerID, childID) {
 Element.prototype.appendAfter = function (element) {
     element.parentNode.insertBefore(this, element.nextSibling);
 }
+
 /************************************ FRIENDS SECTION ******************************************/
 function displayFriends() {
     document.getElementById('friendsDiv').innerHTML = "";
-    const currentUser = getCurrentUserData();
     const { listFriend } = getCurrentUserData();
-    if (listFriend && listFriend.length > 0) {
-        listFriend.map(async friendId => {
+    clearEmptyData('loader')
+    renderLoader('#friends')
+    if (listFriend.length > 0) {
+        listFriend.map(async (friendId, index) => {
             const result = await fetchUserById(friendId)
             renderFriend(result)
+            if (index === listFriend.length - 1)
+                clearEmptyData('loader')
         })
+    } else {
+        clearEmptyData('loader')
+        renderNoFriend();
     }
+    // clearEmptyData('loader')
 }
 
 function renderFriend(friend) {
@@ -647,17 +636,22 @@ async function chatWithFriend(friend, messageFriendBtn) {
 async function displayChats() {
     document.getElementById('chatsDiv').innerHTML = "";
     // renderChat(0, "theanh@gmail.com", "Helllooooo", "1d ago", 3);
+    clearEmptyData('loader')
+    renderLoader('#chatsDiv')
     const chats = await fetchCurrentUserConversation();
-    const { id } = getCurrentUserData();
-    chats.map(async chat => {
-        const friendId = chat.members.filter(memberId => memberId !== id)
-        const friend = await fetchUserById(friendId[0])
-        const messages = await fetchLastMessages(chat.id)
-        const lastMessage = messages.filter(message => message.senderId !== id).sort((a, b) => b.createAt - a.createAt)[0]
-        if (lastMessage) {
+    chats.map(async (chat, index) => {
+        const friendId = chat.members.filter(memberId => memberId !== getCurrentUserData().id)
+        const friend = await fetchUserById(...friendId)
+        const lastMessage = await fetchLastMessages(chat.id)
+        if (friend && lastMessage)
             renderChat(friend, lastMessage.text, getTimeElapsed(lastMessage.createAt.seconds), 1, chat);
-        }
+        if (index === chats.length - 1)
+            clearEmptyData('loader')
     })
+    if (chats.length === 0) {
+        clearEmptyData('loader')
+        renderNoMessage()
+    }
 }
 
 function renderChat(friend, lastMessage, lastAt, notification, chat) {
@@ -779,8 +773,7 @@ function resetSendDiv() {
 async function sendMessage(data) {
     // Send to firestore database
     const { message, type, senderName, senderId } = data
-    const { picture
-    } = getCurrentUserData();
+    const { picture } = getCurrentUserData();
     addDocument('messages', {
         text: message,
         senderId: senderId,
@@ -869,12 +862,6 @@ function renderImage(path, type, sender) {
     var img = document.createElement('img');
     img.src = path;
 
-    // var bar = document.createElement('div')
-    // bar.classList.add('uploading')
-    // var process = document.createElement('div')
-    // process.classList.add('process')
-    // bar.appendChild(process)
-
     if (type == "sent") {
         senderSpan.classList.add("sender");
         img.classList.add("senderImgBody");
@@ -897,15 +884,13 @@ function renderImage(path, type, sender) {
     if (type == "uploading") {
         img.classList.add('imgBlur')
         messageDiv.classList.add('uploading')
-        // messageDiv.appendChild(bar);
     }
 
     document.querySelector("#messagesDiv").appendChild(messageDiv);
     document.querySelector("#messagesDiv").scrollTop = document.querySelector("#messagesDiv").scrollHeight;
 }
 async function openConversation(friend, type) {
-    const { id, name, email, picture } = friend
-    const currentUserId = getCurrentUserData().id
+    const { name, picture } = friend
     groupsBtn.parentElement.classList.remove('active');
     friendsBtn.parentElement.classList.remove('active');
     peopleBtn.parentElement.classList.remove('active');
@@ -933,19 +918,82 @@ async function subCribeMessageDb() {
     unSubcribeMessage = onSnapshot(q, (querySnapshot) => {
         querySnapshot.docChanges().forEach((change) => {
             if (change.type === "added") {
-                const { text, createAt, senderId } = change.doc.data();
+                const { text, senderName, senderId } = change.doc.data()
                 if (senderId === id) {
                     text ? renderMessage(text, 'receiver', name) : renderImage(change.doc.data().imgURL, 'receiver', name)
                 } else {
-                    text ? renderMessage(text, 'sent', name) : renderImage(change.doc.data().imgURL, 'sent', name)
+                    text ? renderMessage(text, 'sent', senderName) : renderImage(change.doc.data().imgURL, 'sent', senderName)
                 }
             }
         });
     });
 }
-function clearMessages() {
-    const messagesDiv = document.getElementById("messagesDiv");
-    while (messagesDiv.firstChild) {
-        messagesDiv.removeChild(messagesDiv.lastElementChild);
-    }
+// ------------------components--------------------
+function renderLoader(querySelector) {
+    const friendDiv = $(querySelector)
+    const loader = document.createElement('div')
+    loader.classList.add('loader')
+    loader.innerHTML = `
+        <svg class="loader-svg" viewBox="25 25 50 50">
+            <circle class="loader-circle" r="20" cy="50" cx="50"></circle>
+        </svg>
+    `
+    friendDiv.appendChild(loader)
+}
+function renderNoMessage() {
+    const chatsDiv = $('#chats').lastElementChild
+    const noMessage = document.createElement('div')
+    noMessage.classList.add('no-message')
+    noMessage.innerHTML = `
+        <i class="material-icons empty-icon">inbox</i>
+        <span>No Messages, yet.</span>
+        <span>
+            No messages in your inbox, yet! Start chatting with people around you.
+        </span>
+        <button class="changeSection">Move to friends</button>
+    `
+    const btn = document.createElement('button')
+    btn.classList.add('changeSection')
+    btn.innerText = 'Move to friends section'
+    noMessage.appendChild(btn)
+    chatsDiv.appendChild(noMessage)
+
+    btn.addEventListener('click', e => {
+        clearEmptyData('message')
+        setActive(friendsBtn)
+        displayFriends();
+    })
+
+}
+function renderNoFriend() {
+    const friendsDiv = $('#friends').lastElementChild
+    const noFriend = document.createElement('div')
+    noFriend.classList.add('no-friend')
+    noFriend.innerHTML = `
+        <i class="material-icons empty-icon">tag_faces</i>
+        <span>Better together</span>
+        <span>
+            Connect & find friends around you.
+        </span>
+    `
+    const btn = document.createElement('button')
+    btn.classList.add('changeSection')
+    btn.innerText = 'Move to people section'
+    noFriend.appendChild(btn)
+    friendsDiv.appendChild(noFriend)
+
+    btn.addEventListener('click', e => {
+        clearEmptyData('friend')
+        setActive(peopleBtn)
+        displayFriends();
+    })
+}
+function clearEmptyData(type) {
+    if (type === 'loader')
+        $(".loader")?.remove();
+    else if (type === 'message')
+        $(".no-message")?.remove();
+    else if (type === 'friend')
+        $(".no-friend")?.remove();
+
 }

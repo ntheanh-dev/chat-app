@@ -1,9 +1,9 @@
 // import { initializeApp } from "firebase/app";
 import { getAuth, signInWithPopup, GoogleAuthProvider, FacebookAuthProvider, signOut, getAdditionalUserInfo }
     from "https://www.gstatic.com/firebasejs/9.17.1/firebase-auth.js";
-import { doc, onSnapshot, getFirestore, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore.js";
+import { doc, onSnapshot, getFirestore } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js";
-import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-storage.js";
+import { getStorage } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-storage.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-analytics.js";
 import { addDocument, getCurrentUserData, fetchUserById, generateKeywords } from "../firebase/service.js";
 var signInWithGoogle = document.getElementById('signInWithGoogle');
@@ -49,7 +49,7 @@ export const authThentication = {
                     localStorage.setItem("userData", JSON.stringify(profile));
                     setTimeout(() => {
                         window.location.href = "/main.html";
-                    }, 2000);
+                    }, 1000);
                 } else {
                     fetchUserById(profile.id)
                         .then(currentUser => {
@@ -61,6 +61,7 @@ export const authThentication = {
                 }
             }).catch((error) => {
                 console.log(error)
+                alert('Login failed')
             })
     },
     signInWithFacebook() {
@@ -72,9 +73,6 @@ export const authThentication = {
                 const token = credential.accessToken;
 
                 const { isNewUser, profile } = getAdditionalUserInfo(result)
-
-                console.log(profile)
-                console.log(result)
                 if (isNewUser) {
                     addDocument('users', {
                         name: profile.name,
@@ -87,33 +85,32 @@ export const authThentication = {
                         listRequest: [],
                     })
                     localStorage.setItem("userData", JSON.stringify(profile));
-                    setTimeout(() => {
+                    if (profile)
                         window.location.href = "/main.html";
-                    }, 2000);
+                    else
+                        alert('Can not login, plase try again')
                 } else {
                     fetchUserById(profile.id)
                         .then(currentUser => {
                             if (currentUser) {
                                 localStorage.setItem("userData", JSON.stringify(currentUser));
                                 window.location.href = "/main.html";
-                            }
+                            } else
+                                alert('Can not login, plase try again')
                         })
                 }
             }).catch((error) => {
                 console.log(error)
             })
-
     },
     signOut() {
         const auth = getAuth();
         signOut(auth).then(() => {
             // Sign-out successful.
-            localStorage.removeItem("userData");
-            localStorage.removeItem("selectedChat");
-            localStorage.removeItem("currently");
+            localStorage.clear()
             window.location.href = "./index.html";
         }).catch((error) => {
-            // An error happened.
+            alert('Ensure Internet Connection to Sign Out');
         });
     },
     init() {
