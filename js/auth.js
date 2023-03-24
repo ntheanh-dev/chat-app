@@ -56,12 +56,24 @@ export const authThentication = {
                             if (currentUser) {
                                 localStorage.setItem("userData", JSON.stringify(currentUser));
                                 window.location.href = "/main.html";
+                            } else {
+                                alert('Login failed! Please try again')
+                                addDocument('users', {
+                                    name: profile.name,
+                                    picture: profile.picture,
+                                    email: profile.email,
+                                    id: profile.id,
+                                    lastLoginAt: result.user.metadata.lastLoginAt,
+                                    keywords: generateKeywords(profile.name),
+                                    listFriend: [],
+                                    listRequest: [],
+                                })
                             }
                         })
                 }
             }).catch((error) => {
                 console.log(error)
-                alert('Login failed')
+                alert('Login failed! Please try again')
             })
     },
     signInWithFacebook() {
@@ -85,10 +97,9 @@ export const authThentication = {
                         listRequest: [],
                     })
                     localStorage.setItem("userData", JSON.stringify(profile));
-                    if (profile)
+                    setTimeout(() => {
                         window.location.href = "/main.html";
-                    else
-                        alert('Can not login, plase try again')
+                    }, 1000);
                 } else {
                     fetchUserById(profile.id)
                         .then(currentUser => {
@@ -96,11 +107,21 @@ export const authThentication = {
                                 localStorage.setItem("userData", JSON.stringify(currentUser));
                                 window.location.href = "/main.html";
                             } else
-                                alert('Can not login, plase try again')
+                                addDocument('users', {
+                                    name: profile.name,
+                                    picture: result.user.photoURL,
+                                    email: result.user.email,
+                                    id: profile.id,
+                                    lastLoginAt: result.user.metadata.lastLoginAt,
+                                    keywords: generateKeywords(profile.name),
+                                    listFriend: [],
+                                    listRequest: [],
+                                })
                         })
                 }
             }).catch((error) => {
                 console.log(error)
+                alert('Login failed! Please try again')
             })
     },
     signOut() {

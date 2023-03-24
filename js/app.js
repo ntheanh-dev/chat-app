@@ -520,9 +520,11 @@ Element.prototype.appendAfter = function (element) {
 
 /************************************ FRIENDS SECTION ******************************************/
 function displayFriends() {
+
     document.getElementById('friendsDiv').innerHTML = "";
     const { listFriend } = getCurrentUserData();
     clearEmptyData('loader')
+    clearEmptyData('friend')
     renderLoader('#friends')
     if (listFriend.length > 0) {
         listFriend.map(async (friendId, index) => {
@@ -637,6 +639,7 @@ async function displayChats() {
     document.getElementById('chatsDiv').innerHTML = "";
     // renderChat(0, "theanh@gmail.com", "Helllooooo", "1d ago", 3);
     clearEmptyData('loader')
+    clearEmptyData('message')
     renderLoader('#chatsDiv')
     const chats = await fetchCurrentUserConversation();
     chats.map(async (chat, index) => {
@@ -950,7 +953,6 @@ function renderNoMessage() {
         <span>
             No messages in your inbox, yet! Start chatting with people around you.
         </span>
-        <button class="changeSection">Move to friends</button>
     `
     const btn = document.createElement('button')
     btn.classList.add('changeSection')
